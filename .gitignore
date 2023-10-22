@@ -1,0 +1,5 @@
+ # Ignore all files in any "dataset" directory
+dataset/
+
+# Ignore all files in any "unknown" directory
+unknown/
