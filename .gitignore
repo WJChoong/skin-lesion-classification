@@ -2,4 +2,7 @@
 dataset/
 
 # Ignore all files in any "unknown" directory
-unknown/
+working_examples/
+
+# Ignore all files in any "unknown" directory
+working_examples/
