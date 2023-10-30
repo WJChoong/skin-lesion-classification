@@ -1,8 +1,8 @@
- # Ignore all files in any "dataset" directory
+# Ignore all files in any "dataset" directory
 dataset/
 
 # Ignore all files in any "unknown" directory
-working_examples/
+unknown/
 
-# Ignore all files in any "unknown" directory
-working_examples/
+# Ignore all files in any "model demo" directory
+model demo/
