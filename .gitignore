@@ -6,3 +6,12 @@ unknown/
 
 # Ignore all files in any "model demo" directory
 model demo/
+
+# Ignore all files in any "gan_model_image" directory
+gan_model_image/
+
+# Ignore all files in any "gan_model_image" directory
+training_checkpoints/
+
+# Ignore all files in any "env" directory
+.env
