@@ -30,7 +30,7 @@ import os
 from dotenv import load_dotenv
 
 # Load the environment variables
-load_dotenv()
+load_dotenv()a
 
 # GETS THE CLIENT OBJECT FROM DISCORD.PY. CLIENT IS SYNONYMOUS WITH BOT.
 intents = discord.Intents.default()
