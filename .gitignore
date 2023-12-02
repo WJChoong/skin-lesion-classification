@@ -18,3 +18,12 @@ training_checkpoints/
 
 # Ignore all files in any "test_gan" directory
 test_gan/
+
+# Ignore all files in any "test_gan" directory
+GenerativeSkinLesion/Train/
+
+# Ignore all files in any "test_gan" directory
+GenerativeSkinLesion/_pycache_/
+
+# Ignore all files in any "test_gan" directory
+GenerativeSkinLesion/logs/

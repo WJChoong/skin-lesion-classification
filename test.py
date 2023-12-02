@@ -16,12 +16,12 @@ class InvestmentPortfolio:
         self.cashflow = self.total_amount * 0.20
 
     def display_allocations(self):
-        return f"High Risk: ${self.high_risk:.2f}\nMedium Risk: ${self.medium_risk:.2f}\nLow Risk: ${self.low_risk:.2f}\nCash Flow: ${self.cashflow:.2f}"
+        return f"High Risk: RM {self.high_risk:.2f}\nMedium Risk: RM {self.medium_risk:.2f}\nLow Risk: RM {self.low_risk:.2f}\nCash Flow: RM {self.cashflow:.2f}"
 
     def update_total_amount(self, new_total_amount):
         self.total_amount = new_total_amount
         self.allocate_investment()
 
 # Example usage
-portfolio = InvestmentPortfolio(7100)
+portfolio = InvestmentPortfolio(7800)
 print(portfolio.display_allocations())
