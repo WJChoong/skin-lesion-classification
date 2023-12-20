@@ -30,12 +30,10 @@ def check_lesion(request):
          # Preprocess the uploaded image
         img_full_path = os.path.join(settings.MEDIA_ROOT, 'unlabelled', filename)
         print(f" -------------- {img_full_path} -------------")
-        img = load_img(img_full_path, target_size=(224, 224))  # Adjust target size to match model's expected input
-        # img_array = img_to_array(img)
-        # img_array = np.expand_dims(img_array, axis=0)  # Model expects a batch of images
-
-        # # Make sure that the input image is preprocessed just like during model training
-        # img_array /= 255.0  # Adjust if you had a different preprocessing step
+        img = image.load_img(img_full_path, target_size=(224, 224))  # Adjust target size to match model's expected input
+        img_array = image.img_to_array(img)
+        img_array = np.expand_dims(img_array, axis=0)  # Model expects a batch of images
+        img_array /= 255.0  # Scale pixel values to [0, 1]
 
         # # Predict the class of the image
         # prediction = model.predict(img_array)

@@ -5,24 +5,25 @@
       <div class="card-body">
         <form @submit.prevent="login">
           <div class="mb-3">
-            <label for="username" class="form-label">Email address</label>
-            <input type="email" class="form-control" id="username" v-model="username" required placeholder="Enter email">
+            <label for="email" class="form-label">Email address</label>
+            <input type="email" class="form-control" id="email" v-model="email" required placeholder="Enter email" @input="validateEmail">
+            <div v-if="emailError" class="invalid-feedback d-block">{{ emailErrorMessage }}</div>
           </div>
           <div class="mb-3">
             <label for="password" class="form-label">Password</label>
             <input type="password" class="form-control" id="password" v-model="password" required placeholder="Password">
+            <div v-if="loginError" class="invalid-feedback d-block">{{ loginErrorMessage }}</div>
           </div>
           <div class="mb-4 form-check">
-            <input type="checkbox" class="form-check-input" id="remember-me">
+            <input type="checkbox" class="form-check-input" id="remember-me" v-model="rememberMe">
             <label class="form-check-label" for="remember-me">Remember me</label>
           </div>
           <div class="d-grid gap-2">
-            <button type="submit" class="btn btn-primary">Login</button>
+            <button type="submit" class="btn btn-primary" :disabled="emailError">Login</button>
           </div>
         </form>
         <div class="mt-4 text-center">
           <a href="#" class="text-light">Forgot password?</a>
-          <span class="text-white mx-2">|</span>
         </div>
       </div>
     </div>
@@ -34,20 +35,43 @@ export default {
   name: 'LoginPage',
   data() {
     return {
-      username: '',
-      password: ''
+      email: '',
+      password: '',
+      rememberMe: false,
+      loginError: false,
+      emailError: false,
+      loginErrorMessage: 'Invalid username and/or password.',
+      emailErrorMessage: 'Please enter a valid email address.'
     };
   },
   methods: {
     login() {
-        if (this.email === 'hello123@gmail.com' && this.password === 'hello123') {
-            console.log('Login success');
-
-            // Redirect to the home page
-            this.$router.push({ name: 'ImageUploader' });
+      if (!this.emailError && this.email === 'hello123@gmail.com' && this.password === 'hello123') {
+        console.log('Login success');
+        if (this.rememberMe) {
+          localStorage.setItem('rememberedEmail', this.email);
         } else {
-            console.log('Login failed');
+          localStorage.removeItem('rememberedEmail');
         }
+        this.$store.commit('SET_AUTHENTICATED', true);
+        // Redirect to the home page
+        this.$router.push({ name: 'ImageUploader' });
+      } else {
+        this.loginError = true;
+        this.password = '';
+      }
+    },
+    validateEmail() {
+      // Simple regex for basic email validation
+      const pattern = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+      this.emailError = !pattern.test(this.email);
+    }
+  },
+  created() {
+    const rememberedEmail = localStorage.getItem('rememberedEmail');
+    if (rememberedEmail) {
+      this.email = rememberedEmail;
+      this.rememberMe = true;
     }
   }
 };
@@ -56,5 +80,13 @@ export default {
 <style scoped>
 .custom-dark-bg {
   background-color: #343a40; /* A lighter shade of dark */
+}
+
+.invalid-feedback {
+  color: #e3342f; /* Bootstrap danger color */
+}
+
+.d-block {
+  display: block;
 }
 </style>

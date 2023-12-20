@@ -6,11 +6,11 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav">
-        <li class="nav-item" v-if="auth.isAuthenticated">
-          <a class="nav-link" href="/profile">Profile</a>
+        <li class="nav-item" v-if="isAuthenticated">
+          <router-link to="/profile" class="nav-link">Profile</router-link>
         </li>
-        <li class="nav-item" v-if="auth.isAuthenticated">
-          <a class="nav-link" href="/verify">Verify</a>
+        <li class="nav-item" v-if="isAuthenticated">
+          <router-link to="/verify" class="nav-link">Verify</router-link>
         </li>
         <li class="nav-item" v-else>
           <router-link to="/login" class="nav-link">Login</router-link>
@@ -21,7 +21,7 @@
 </template>
 
 <script>
-// import { auth } from '../middleware/auth';
+import { mapState } from 'vuex';
 import LoginPage from '../components/LoginPage.vue'
 
 export default {
@@ -38,6 +38,11 @@ export default {
     receiveMessage(message) {
       console.log('Message received from child:', message);
     }
+  },
+  computed: {
+    ...mapState({
+      isAuthenticated: state => state.isAuthenticated
+    })
   }
 };
 </script>
