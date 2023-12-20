@@ -1,0 +1,84 @@
+<!-- skin_detection/templates/skin_detection/check_lesion.html -->
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Skin Lesion Detection</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        #content {
+            width: 50%;
+            border: 1px solid #000;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #image-preview {
+            width: 100%;
+            height: 200px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        #image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        #result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="content">
+        <form method="post" enctype="multipart/form-data" id="upload-form">
+            {% csrf_token %}
+            <div id="image-preview">
+                <span>Image preview will be shown here after selection</span>
+            </div>
+            {{ form.image }}
+            <button type="submit">Check</button>
+        </form>
+        <div id="result">
+            <p>Result: <span id="result-text">None</span></p>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript for handling image preview
+        const imageInput = document.querySelector('#id_image');
+        const imagePreview = document.querySelector('#image-preview');
+
+        imageInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    imagePreview.innerHTML = `<img src="${e.target.result}" alt="Image Preview">`;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                imagePreview.innerHTML = "<span>Image preview will be shown here after selection</span>";
+            }
+        });
+    </script>
+</body>
+
+</html>

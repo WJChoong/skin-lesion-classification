@@ -7,23 +7,17 @@ unknown/
 # Ignore all files in any "model demo" directory
 model demo/
 
-# Ignore all files in any "gan_model_image" directory
-gan_model_image/
-
-# Ignore all files in any "gan_model_image" directory
-training_checkpoints/
-
 # Ignore all files in any "env" directory
 .env
 
-# Ignore all files in any "test_gan" directory
-test_gan/
+system/myworld
 
-# Ignore all files in any "test_gan" directory
-GenerativeSkinLesion/Train/
+system/skin_lesion_system/media/unlabelled
 
-# Ignore all files in any "test_gan" directory
-GenerativeSkinLesion/_pycache_/
+system/skin_lesion_system/skin_lesion_system/__pycache__/
 
-# Ignore all files in any "test_gan" directory
-GenerativeSkinLesion/logs/
+system/skin_lesion_system/skin_lesion_system/views/__pycache__/
+
+system/skin_lesion_system/skin_lesion_system/forms/__pycache__/
+
+system/skin_lesion_system/skin_lesion_system/models/__pycache__/
