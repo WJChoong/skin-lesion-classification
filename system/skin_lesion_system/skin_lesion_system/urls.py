@@ -19,12 +19,20 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from .views import view as skin_detection_views
+from .views import auth as auth_views
+from .views import user as user_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # path('upload/', skin_detection_views.upload_image, name='upload_image'),
-    # path('check/', skin_detection_views.check_lesion, name='check_lesion'),
+    path('api/get/images/', skin_detection_views.get_images, name='get_images'),
     path('api/upload/', skin_detection_views.check_lesion, name='upload_image'),
+    
+    path('auth/login/', auth_views.login, name='login'),
+    
+    path('user/get/', user_views.get_users, name='get_users'),
+    path('user/create/', user_views.create_user, name='create_user'),
+    path('user/update/', user_views.update_user, name='update_user'),
+    path('user/delete/', user_views.delete_user, name='delete_user'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:

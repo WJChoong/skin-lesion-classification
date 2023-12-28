@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 import ImageUploader from "../components/ImageUploader.vue";
 import LoginPage from "../components/LoginPage";
+import ImageTable from "../components/ImageTable";
 
 const routes = [
   {
@@ -12,6 +13,11 @@ const routes = [
     path: "/login",
     name: "LoginPage",
     component: LoginPage,
+  },
+  {
+    path: "/verify",
+    name: "ImageTable",
+    component: ImageTable,
   },
 ];
 

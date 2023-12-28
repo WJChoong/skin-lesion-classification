@@ -76,11 +76,14 @@ WSGI_APPLICATION = 'skin_lesion_system.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'skin_lesion',
+        'USER': 'root',
+        'PASSWORD': 'password',
+        'HOST': 'localhost',
+        'PORT': '3308', 
     }
 }
 
@@ -116,7 +119,7 @@ USE_I18N = True
 USE_TZ = True
 
 # Configure media root and URL
-MEDIA_URL = '/media/'
+MEDIA_URL = '/media/unlabelled/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
