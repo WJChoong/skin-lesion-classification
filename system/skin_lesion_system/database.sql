@@ -18,6 +18,9 @@ CREATE TABLE auth (
     level VARCHAR(50) NOT NULL,
     user_id VARCHAR(128) NOT NULL,
     status BOOLEAN DEFAULT TRUE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at DATETIME DEFAULT NULL,
     CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE
 );
 
@@ -49,3 +52,6 @@ VALUES ('263a4480-c9d1-4573-b278-bc6a1057478b', 'John Doe', 'choongweijie15@gmai
 
 INSERT INTO Auth (id, password, level, user_id, status) 
 VALUES ('3b531775-6c52-4fa6-a85f-f83ff9d8611e', 'ZNDdTcPOhonRdnaqNmezVr3PcHuwtAktGi9LgyIGLwc=', '1', '263a4480-c9d1-4573-b278-bc6a1057478b', TRUE);
+
+ALTER TABLE image 
+CHANGE COLUMN name image_data JSON;

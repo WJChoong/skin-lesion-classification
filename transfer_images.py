@@ -33,7 +33,7 @@ downsampled_data.to_csv(new_dataset_path, index=False)
 
 # Define the source and destination folders for the images
 source_folder = './dataset/ISIC_2019_Training_Input'  # Update with your source folder path
-destination_folder = './dataset/2019_4_class'  # Update with your destination folder path
+destination_folder = './dataset/balanced_2019_4_class'  # Update with your destination folder path
 
 # Create destination folder if it doesn't exist
 if not os.path.exists(destination_folder):

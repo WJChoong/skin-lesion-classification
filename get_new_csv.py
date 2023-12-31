@@ -5,13 +5,13 @@ import numpy as np
 np.random.seed(45)
 
 # Load the CSV file
-df = pd.read_csv('./dataset/ISIC2018_Task3_Test_GroundTruth.csv')  # Replace with your file path
+df = pd.read_csv('./dataset/ISIC_2019_Training_GroundTruth.csv')  # Replace with your file path
 
 # List of target classes to downsample
-target_classes = ["DF", "VASC", "AKIEC"]
+target_classes = ["DF", "VASC", "AK", "SCC"]
 
 # Maximum number of samples for each class
-max_samples = 2500
+max_samples = 1987
 
 # Columns representing the classes (excluding 'image' and 'UNK' columns)
 class_columns = df.columns[1:-1]
@@ -32,8 +32,10 @@ for cls in class_columns:
 
 # Changing the label of the remaining images of specified classes to UNK
 df.loc[df[target_classes].sum(axis=1) > 0, "UNK"] = 1
-df.loc[df[target_classes].sum(axis=1) > 0, target_classes] = 0
-df.drop(columns=target_classes)
+# df.loc[df[target_classes].sum(axis=1) > 0, target_classes] = 0
+
+# Drop the target classes from the DataFrame
+df.drop(columns=target_classes, inplace=True)
 
 # Save the modified dataframe to a new CSV file
-df.to_csv('./dataset/val_class.csv', index=False)
+df.to_csv('./dataset/new_2019_balanced.csv', index=False)

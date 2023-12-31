@@ -15,6 +15,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from django.core.files.storage import FileSystemStorage
 from django.views.decorators.csrf import csrf_exempt
+from django.db import connection
 #from keras.preprocessing.image import load_img, img_to_array
 
 model = load_model('./skin_lesion_system/ml_model/vgg16.h5')
@@ -28,9 +29,16 @@ def check_lesion(request):
         filename = fs.save(image.name, image)
         uploaded_file_url = fs.url(filename)
         
-        # Placeholder logic to generate a sentence
-        # You should replace this with actual processing logic
-         # Preprocess the uploaded image
+        try:
+            with connection.cursor() as cursor:
+                sql_query = "INSERT INTO image (name) VALUES (%s)"
+                cursor.execute(sql_query, [filename])
+                cursor.close()
+        except Exception as e:
+            print(f"Database error: {e}")
+            return JsonResponse({'error': 'Database error'}, status=500)
+        
+        # Preprocess the uploaded image
         img_full_path = os.path.join(settings.MEDIA_ROOT, 'unlabelled', filename)
         print(f" -------------- {img_full_path} -------------")
         img = load_img(img_full_path, target_size=(224, 224, 3))  # Adjust target size to match model's expected input
@@ -59,15 +67,8 @@ def check_lesion(request):
         # })
     else:
         return JsonResponse({'error': 'Invalid request'}, status=400)
-    
-# def get_images(request):
-#     image_folder = os.path.join(settings.MEDIA_ROOT, 'unlabelled')
-#     image_files = [f for f in os.listdir(image_folder) if f.endswith(('.png', '.jpg', '.jpeg'))]
-#     image_urls = [os.path.join(settings.MEDIA_URL, f) for f in image_files]
-#     print(f'images_url: --- {image_urls}---')
-#     return JsonResponse({'images': image_urls})
 
-def get_images(request):
+def getImages(request):
     image_folder = os.path.join(settings.MEDIA_ROOT, 'unlabelled')
     image_files = [f for f in os.listdir(image_folder) if f.endswith(('.png', '.jpg', '.jpeg'))]
 
@@ -82,3 +83,6 @@ def get_images(request):
             image_data.append({'id': image_id, 'image': f"data:image/jpeg;base64,{encoded_string}"})
 
     return JsonResponse({'images': image_data})
+
+def deleteImages(request):
+    return True
