@@ -23,7 +23,7 @@
           </div>
         </form>
         <div class="mt-4 text-center">
-          <a href="#" class="text-light">Forgot password?</a>
+          <router-link to="/resetpass" class="text-light">Forgot password?</router-link>
         </div>
       </div>
     </div>
@@ -45,22 +45,47 @@ export default {
     };
   },
   methods: {
-    login() {
-      if (!this.emailError && this.email === 'hello123@gmail.com' && this.password === 'hello123') {
-        console.log('Login success');
-        if (this.rememberMe) {
-          localStorage.setItem('rememberedEmail', this.email);
+    async login() {
+    if (!this.emailError && this.email && this.password) {
+      const requestData = {
+        email: this.email,
+        password: this.password,
+      };
+
+      await fetch('http://localhost:4040/auth/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          console.log('Login success');
+          if (this.rememberMe) {
+            localStorage.setItem('rememberedEmail', this.email);
+          } else {
+            localStorage.removeItem('rememberedEmail');
+          }
+          this.$store.commit('SET_AUTHENTICATED', true);
+          // Redirect to the home page
+          this.$router.push({ name: 'ImageUploader' });
         } else {
-          localStorage.removeItem('rememberedEmail');
+          this.loginError = true;
+          this.password = '';
         }
-        this.$store.commit('SET_AUTHENTICATED', true);
-        // Redirect to the home page
-        this.$router.push({ name: 'ImageUploader' });
-      } else {
+      })
+      .catch(error => {
+        console.error('Error:', error);
         this.loginError = true;
         this.password = '';
-      }
-    },
+      });
+    } else {
+      this.loginError = true;
+      this.password = '';
+    }
+  },
     validateEmail() {
       // Simple regex for basic email validation
       const pattern = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;

@@ -8,9 +8,16 @@ import base64
 import random
 import string
 import uuid
+import os
 from ..common.message import failMessage, successMessage
+from ..common.send_email import send_email
+from ..common.email_templates.reset_password_email import reset_password_email_template
+from dotenv import load_dotenv
 
-salt = 'ThisIsMyFYP'
+load_dotenv()
+front_end_url = os.getenv('FRONT_END_URL')
+salt = os.getenv('SALT')
+print(f"salt: {salt}")
 
 def generateId():
     return uuid.uuid4()
@@ -27,7 +34,9 @@ def hash_password(password, salt):
 
 def verify_password(stored_hash, salt, password_to_check):
     # Hash the password to check
+    print(f"Password to check: {password_to_check}")
     new_hash = hash_password(password_to_check, salt)
+    print(f"New Hash: {new_hash}")
 
     return new_hash == stored_hash
 
@@ -74,7 +83,7 @@ def login(request):
         if email and password:
             # Now you can execute a raw SQL query to retrieve additional data
             with connection.cursor() as cursor:
-                sql_query = "SELECT id FROM user WHERE email = %s"
+                sql_query = "SELECT id FROM user WHERE email = %s AND status = 1"
                 cursor.execute(sql_query, [email])
                 custom_data = cursor.fetchone()
                 cursor.close()
@@ -83,7 +92,7 @@ def login(request):
                 user_id = custom_data[0]
                 print(f"custom_field_value: {user_id}")
                 with connection.cursor() as cursor:
-                    sql_query = "SELECT password FROM auth WHERE user_id = %s"
+                    sql_query = "SELECT password FROM auth WHERE user_id = %s AND status = 1"
                     cursor.execute(sql_query, [user_id])
                     custom_data = cursor.fetchone()
                     cursor.close()
@@ -92,71 +101,67 @@ def login(request):
                         db_password = custom_data[0]
                         print(f"password: {password}")
                         print(f"db_password: {db_password}")
-                        hashed_password = hash_password(password, salt)
-                        print(f"hashed_password: {hashed_password}")
                         
-                        is_correct = verify_password(hashed_password, salt, password)
+                        is_correct = verify_password(db_password, salt, password)
+                        print(f"is_correct: {is_correct}")
 
                         if is_correct:
-                            return JsonResponse({'status': 'success', 'message': 'Login successful.'}, status=200)
+                            return successMessage('Login successful.')
                         else:
-                            return JsonResponse({'status': 'error', 'message': 'Email and password do not match.'}, status=400)
+                            return failMessage('Email and password do not match.')
                     else:
-                        return JsonResponse({'status': 'error', 'message': 'Invalid User.'}, status=400)
+                        return failMessage('Invalid User.')
             else:
-                return JsonResponse({'status': 'error', 'message': 'Invalid User.'}, status=400)
+                return failMessage('Invalid User.')
         else:
-            return JsonResponse({'status': 'error', 'message': 'Email and password are required.'}, status=400)
+            return failMessage('Email and password are required.')
     else:
-        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=400)
+        return failMessage('Invalid request method.')
     
+@csrf_exempt
 def resetPassword(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body.decode('utf-8'))
             email = data.get('email')
-            password = data.get('password')
         except json.JSONDecodeError:
-            return JsonResponse({'status': 'error', 'message': 'Invalid JSON data.'}, status=400)
+            return failMessage('Invalid JSON data.')
 
-        if email and password:
-            # Now you can execute a raw SQL query to retrieve additional data
+        if email:
             with connection.cursor() as cursor:
-                sql_query = "SELECT id FROM user WHERE email = %s"
+                # Check if the user exists
+                sql_query = "SELECT id FROM user WHERE email = %s AND status = 1"
                 cursor.execute(sql_query, [email])
-                custom_data = cursor.fetchone()
+                user_data = cursor.fetchone()
                 cursor.close()
 
-        #     if custom_data:
-        #         user_id = custom_data[0]
-        #         print(f"custom_field_value: {user_id}")
-        #         with connection.cursor() as cursor:
-        #             sql_query = "SELECT password FROM auth WHERE user_id = %s"
-        #             cursor.execute(sql_query, [user_id])
-        #             custom_data = cursor.fetchone()
-        #             cursor.close()
+                if user_data:
+                    user_id = user_data[0]
+                    # Generate a new password
+                    new_password = generatePassword()
+                    print(f"New Password: {new_password}")
+                    hashed_password = hash_password(new_password, salt)
+                    print(f"Hashed Password: {hashed_password}")
                     
-        #             if custom_data:
-        #                 db_password = custom_data[0]
-        #                 print(f"password: {password}")
-        #                 print(f"db_password: {db_password}")
-        #                 hashed_password = hash_password(password, salt)
-        #                 print(f"hashed_password: {hashed_password}")
-                        
-        #                 is_correct = verify_password(hashed_password, salt, password)
+                    # Update the password in the database
+                    with connection.cursor() as cursor:
+                        sql_query = "UPDATE auth SET password = %s WHERE user_id = %s AND status = 1"
+                        cursor.execute(sql_query, [hashed_password, user_id])
+                        cursor.close()
 
-        #                 if is_correct:
-        #                     return JsonResponse({'status': 'success', 'message': 'Login successful.'}, status=200)
-        #                 else:
-        #                     return JsonResponse({'status': 'error', 'message': 'Email and password do not match.'}, status=400)
-        #             else:
-        #                 return JsonResponse({'status': 'error', 'message': 'Invalid User.'}, status=400)
-        #     else:
-        #         return JsonResponse({'status': 'error', 'message': 'Invalid User.'}, status=400)
+                    # Send the new password via email
+                    email_message = send_email("Password Reset", reset_password_email_template(email, new_password, f'{front_end_url}/#/login'), email)
+
+                    if email_message:
+                        return successMessage('Password reset successfully. Please check your email.')
+                    else:
+                        return failMessage('Failed to send reset password email.')
+                else:
+                    return failMessage('User not found.')
         else:
-            return JsonResponse({'status': 'error', 'message': 'Email and password are required.'}, status=400)
+            return failMessage('Email is required.')
     else:
-        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=400)
+        return failMessage('Invalid request method.')
     
 @csrf_exempt
 def changePassword(request):

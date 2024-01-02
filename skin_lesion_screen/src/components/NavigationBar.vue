@@ -12,7 +12,11 @@
         <li class="nav-item" v-if="isAuthenticated">
           <router-link to="/verify" class="nav-link">Verify</router-link>
         </li>
+        <li class="nav-item" v-if="isAuthenticated">
+          <router-link to="/verify" class="nav-link">Manage User</router-link>
+        </li>
         <li class="nav-item" v-else>
+          <router-link to="/manageuser" class="nav-link">Manage User</router-link>
           <router-link to="/login" class="nav-link">Login</router-link>
         </li>
       </ul>

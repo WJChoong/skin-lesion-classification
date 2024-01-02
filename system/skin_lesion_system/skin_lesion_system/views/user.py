@@ -1,18 +1,26 @@
-import datetime
+from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db import connection
 import json
+import os
 from .auth import generatePassword, hash_password, generateId
 from ..common.message import failMessage, successMessage
+from ..common.send_email import send_email
+from ..common.email_templates.login_email import login_email_template
+from dotenv import load_dotenv
 
-salt = 'ThisIsMyFYP'
+load_dotenv()
+front_end_url = os.getenv('FRONT_END_URL')
+salt = os.getenv('SALT')
+print(f"front_end_url: {front_end_url}")
+print(f"salt2: {salt}")
 
 @csrf_exempt
 def getAllUsers(request):
     if request.method == 'GET':
         with connection.cursor() as cursor:
-            sql_query = "SELECT id, email, name, country FROM user"
+            sql_query = "SELECT id, email, name, country FROM user WHERE status=1"
             cursor.execute(sql_query)
             users_data = cursor.fetchall()
             cursor.close()
@@ -21,7 +29,7 @@ def getAllUsers(request):
         print(f'users_data: {users_data}')
         for user_data in users_data:
             id, email, name, country = user_data
-            users_list.append({'id': id, 'name': name, 'email': country})
+            users_list.append({'id': id, 'name': name, 'email': email, 'country': country})
         return successMessage('Successfully get all users', users_list)
     else:
         return failMessage('Invalid request method.')
@@ -71,7 +79,7 @@ def createUser(request):
         if name and email and country:
             # Check if the email already exists
             with connection.cursor() as cursor:
-                sql_query = "SELECT id FROM user WHERE email = %s"
+                sql_query = "SELECT id FROM user WHERE email = %s AND status = 1"
                 cursor.execute(sql_query, [email])
                 existing_user = cursor.fetchone()
                 cursor.close()
@@ -87,14 +95,19 @@ def createUser(request):
             
                 with connection.cursor() as cursor:
                     sql_query = "INSERT INTO user (id, name, email, country, status) VALUES (%s, %s, %s, %s, %s)"
-                    cursor.execute(sql_query, [userId, name, email, country, 0])
+                    cursor.execute(sql_query, [userId, name, email, country, 1])
                     cursor.close()
                 with connection.cursor() as cursor:
                     sql_query = "INSERT INTO auth (id, user_id, password, level, status) VALUES (%s, %s, %s, %s, %s)"
                     cursor.execute(sql_query, [authId, userId, hashed_password, 2, 1])
                     cursor.close()
-                    
-                return successMessage('User created successfully.')
+                
+                email_message = send_email("Welcome! Your Account Details", login_email_template(email, password, f'{front_end_url}/#/login'), email)
+                
+                if email_message:
+                    return successMessage('User created successfully.')
+                else:
+                    return failMessage('Fail to send email')
         else:
             return failMessage('Name, email, and country are required.')
     else:

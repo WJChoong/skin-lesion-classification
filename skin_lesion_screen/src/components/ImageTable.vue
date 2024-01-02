@@ -14,8 +14,8 @@
           <td><img :src="item.image" class="img-fluid" :alt="'Image ' + (index + 1)"></td>
           <td>
             <select v-model="selectedClass" class="form-control">
-              <option value="">Select Class</option>
-              <option v-for="classItem in isicClasses" :value="classItem.id" :key="classItem.id">
+              <option value="" style="color: grey;">Select Class</option>
+              <option v-for="classItem in classes" :value="classItem.id" :key="classItem.id">
                 {{ classItem.name }}
               </option>
             </select>
@@ -26,6 +26,7 @@
     </table>
   </div>
 </template>
+
 <script>
 const axios = require('axios')
 
@@ -34,14 +35,14 @@ export default {
     return {
       images: [],
       classes: [
-        "Melanoma",
-        "Melanocytic Nevus",
-        "Basal Cell Carcinoma",
-        "Actinic Keratosis",
-        "Benign Keratosis",
-        "Dermatofibroma",
-        "Vascular Lesion",
-        "Squamous Cell Carcinoma"
+        { id: 'MEL', name: 'Melanoma' },
+        { id: 'MEL', name: 'Melanocytic Nevus' },
+        { id: 'MEL', name: 'Basal Cell Carcinoma' },
+        { id: 'MEL', name: 'Actinic Keratosis' },
+        { id: 'MEL', name: 'Benign Keratosis' },
+        { id: 'MEL', name: 'Dermatofibroma' },
+        { id: 'MEL', name: 'Vascular Lesion' },
+        { id: 'MEL', name: 'Squamous Cell Carcinoma' },
       ]
     };
   },
@@ -66,13 +67,12 @@ export default {
     }
   },
   mounted() {
-    axios.get('http://localhost:4040/api/get/images/')
-        .then(response => {
-        console.log(response.data.images); // Log to check the URLs
-        this.images = response.data.images;
-        })
-        .catch(error => console.error('Error:', error));
-    }
+    axios.get('http://localhost:4040/images/get/')
+    .then(response => {
+      this.images = response.data.data
+    })
+    .catch(error => console.error('Error:', error));
+  }
 };
 </script>
 

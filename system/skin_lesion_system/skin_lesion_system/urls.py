@@ -26,8 +26,8 @@ from .views import category as category_views
 urlpatterns = [
     # path('admin/', admin.site.urls),
     path('images/get/', image_views.getImages, name='get_images'),
-    path('images/upload/', image_views.check_lesion, name='upload_image'),
-    path('images/delete/', image_views.deleteImages, name='delete_images'),
+    path('images/upload/', image_views.checkLesion, name='upload_image'),
+    path('images/delete/', image_views.deleteImage, name='delete_images'),
     
     path('auth/login/', auth_views.login, name='login'),
     path('auth/reset/', auth_views.resetPassword, name='reset_passwords'),

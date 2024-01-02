@@ -53,9 +53,10 @@ export default {
 
       let formData = new FormData();
       formData.append('image', this.imageFile);
+      console.log("hello---")
 
       try {
-        const response = await axios.post('http://localhost:4040/api/upload/', formData, {
+        const response = await axios.post('http://localhost:4040/images/upload/', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
@@ -64,9 +65,23 @@ export default {
         this.resultMessage = response.data.message;
         console.log('Image uploaded successfully:', response);
       } catch (error) {
-        // Handle error
-        console.error('Error during image upload:', error);
-        this.resultMessage = 'Error uploading the image.';
+        // More detailed error handling
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.error('Error data:', error.response.data);
+          console.error('Error status:', error.response.status);
+          console.error('Error headers:', error.response.headers);
+          this.resultMessage = 'Error: ' + error.response.data.message;
+        } else if (error.request) {
+          // The request was made but no response was received
+          console.error('Error request:', error.request);
+          this.resultMessage = 'No response from the server.';
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.error('Error message:', error.message);
+          this.resultMessage = 'Error: ' + error.message;
+        }
       }
     },
   },
