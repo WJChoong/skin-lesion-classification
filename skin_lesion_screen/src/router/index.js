@@ -4,6 +4,7 @@ import LoginPage from "../components/LoginPage";
 import ImageTable from "../components/ImageTable";
 import ResetPassword from "../components/ResetPassword";
 import ManageUser from "../components/ManageUser";
+import Profile from "../components/Profile";
 
 const routes = [
   {
@@ -15,6 +16,11 @@ const routes = [
     path: "/login",
     name: "LoginPage",
     component: LoginPage,
+  },
+  {
+    path: "/profile",
+    name: "Profile",
+    component: Profile,
   },
   {
     path: "/verify",

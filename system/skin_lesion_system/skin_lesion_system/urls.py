@@ -34,7 +34,7 @@ urlpatterns = [
     path('auth/change/', auth_views.changePassword, name='change_passwords'),
     
     path('user/get/all/', user_views.getAllUsers, name='get_users'),
-    path('user/get/user/', user_views.getUserDetails, name='get_users'),
+    path('user/get/user/', user_views.getUserDetails, name='get_user'),
     path('user/create/', user_views.createUser, name='create_user'),
     path('user/update/', user_views.updateUser, name='update_user'),
     path('user/delete/', user_views.deleteUser, name='delete_user'),

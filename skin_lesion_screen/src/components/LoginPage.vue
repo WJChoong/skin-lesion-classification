@@ -46,46 +46,51 @@ export default {
   },
   methods: {
     async login() {
-    if (!this.emailError && this.email && this.password) {
-      const requestData = {
-        email: this.email,
-        password: this.password,
-      };
+      if (!this.emailError && this.email && this.password) {
+        const requestData = {
+          email: this.email,
+          password: this.password,
+        };
 
-      await fetch('http://localhost:4040/auth/login/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.status === 'success') {
-          console.log('Login success');
-          if (this.rememberMe) {
-            localStorage.setItem('rememberedEmail', this.email);
+        await fetch('http://localhost:4040/auth/login/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestData),
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            console.log('Login success');
+            if (this.rememberMe) {
+              localStorage.setItem('rememberedEmail', this.email);
+            } else {
+              localStorage.removeItem('rememberedEmail');
+            }
+            
+            // Update user_level and user_id in the Vuex store
+            this.$store.commit('SET_AUTHENTICATED', true);
+            this.$store.commit('SET_USER_LEVEL', data.data.user_level);
+            this.$store.commit('SET_USER_ID', data.data.user_id);
+
+            // Redirect to the home page
+            this.$router.push({ name: 'ImageUploader' });
           } else {
-            localStorage.removeItem('rememberedEmail');
+            this.loginError = true;
+            this.password = '';
           }
-          this.$store.commit('SET_AUTHENTICATED', true);
-          // Redirect to the home page
-          this.$router.push({ name: 'ImageUploader' });
-        } else {
+        })
+        .catch(error => {
+          console.error('Error:', error);
           this.loginError = true;
           this.password = '';
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
+        });
+      } else {
         this.loginError = true;
         this.password = '';
-      });
-    } else {
-      this.loginError = true;
-      this.password = '';
-    }
-  },
+      }
+    },
     validateEmail() {
       // Simple regex for basic email validation
       const pattern = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;

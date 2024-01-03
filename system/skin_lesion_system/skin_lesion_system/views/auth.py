@@ -92,13 +92,14 @@ def login(request):
                 user_id = custom_data[0]
                 print(f"custom_field_value: {user_id}")
                 with connection.cursor() as cursor:
-                    sql_query = "SELECT password FROM auth WHERE user_id = %s AND status = 1"
+                    sql_query = "SELECT password, level FROM auth WHERE user_id = %s AND status = 1"
                     cursor.execute(sql_query, [user_id])
                     custom_data = cursor.fetchone()
                     cursor.close()
                     
                     if custom_data:
                         db_password = custom_data[0]
+                        level = custom_data[1]
                         print(f"password: {password}")
                         print(f"db_password: {db_password}")
                         
@@ -106,7 +107,7 @@ def login(request):
                         print(f"is_correct: {is_correct}")
 
                         if is_correct:
-                            return successMessage('Login successful.')
+                            return successMessage('Login successful.', { "level": level, "user_id": user_id})
                         else:
                             return failMessage('Email and password do not match.')
                     else:
@@ -168,22 +169,21 @@ def changePassword(request):
     if request.method == 'PUT':
         try:
             data = json.loads(request.body.decode('utf-8'))
-            email = data.get('email')
+            user_id = data.get('user_id')
             old_password = data.get('old_password')
             new_password = data.get('new_password')
         except json.JSONDecodeError:
             return JsonResponse({'status': 'error', 'message': 'Invalid JSON data.'}, status=400)
 
-        if email and old_password and new_password:
+        if user_id and old_password and new_password:
             with connection.cursor() as cursor:
-                sql_query = "SELECT id FROM user WHERE email = %s"
-                cursor.execute(sql_query, [email])
+                sql_query = "SELECT id FROM user WHERE id = %s AND status = 1 "
+                cursor.execute(sql_query, [user_id])
                 user_data = cursor.fetchone()
 
             if user_data:
-                user_id = user_data[0]
                 with connection.cursor() as cursor:
-                    sql_query = "SELECT password FROM auth WHERE user_id = %s"
+                    sql_query = "SELECT password FROM auth WHERE user_id = %s AND status = 1 "
                     cursor.execute(sql_query, [user_id])
                     password_data = cursor.fetchone()
 
@@ -191,7 +191,7 @@ def changePassword(request):
                         db_password = password_data[0]
                         if verify_password(db_password, salt, old_password):
                             hashed_new_password = hash_password(new_password, salt)
-                            sql_query = "UPDATE auth SET password = %s WHERE user_id = %s"
+                            sql_query = "UPDATE auth SET password = %s WHERE user_id = %s AND status = 1"
                             cursor.execute(sql_query, [hashed_new_password, user_id])
                             return successMessage('Password changed successfully.')
                         else:

@@ -85,6 +85,12 @@ export default {
       }
     },
   },
+  computed: {
+    isAuthenticated() {
+      return this.$store.getters.isAuthenticated;
+    },
+  },
+
 };
 </script>
 

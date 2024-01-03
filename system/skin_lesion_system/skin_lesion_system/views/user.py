@@ -44,10 +44,12 @@ def getAllUsers(request):
 def getUserDetails(request):
     if request.method == 'GET':
         try:
-            data = json.loads(request.body.decode('utf-8'))
-            id = data.get('id')
+            id = request.GET.get('id')
         except json.JSONDecodeError:
+            print("Invalid JSON")
             return failMessage('Invalid JSON data.')
+        
+        print(f"id: {id}")
         if id: 
             with connection.cursor() as cursor:
                 sql_query = "SELECT id, name, email, country FROM user WHERE id = %s"
@@ -64,7 +66,6 @@ def getUserDetails(request):
                     'country': country
                 }
                 return successMessage('Successfully get data', user_data)
-                # return JsonResponse({'status': 'success', 'message': user_data}, status=200)
             else:
                 return failMessage('Invalid User')
         return failMessage('User data is not found')

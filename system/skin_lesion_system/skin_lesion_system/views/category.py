@@ -17,6 +17,7 @@ def categoryImage(request):
         except json.JSONDecodeError:
             return failMessage('Invalid JSON data.')
 
+        print("here")
         if user_id and image_id:
             # Check if the user exists
             with connection.cursor() as cursor:
