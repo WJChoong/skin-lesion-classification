@@ -1,212 +1,214 @@
 <template>
   <div class="container mt-3 mb-3">
-    <h2>User Management</h2>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h2>User Management</h2>
+      <button class="btn btn-success" @click="toggleCreateForm">
+        {{ showCreateForm ? '-' : '+' }}
+      </button>
+    </div>
+
+    <!-- New User Form -->
+    <div v-if="showCreateForm" class="mb-4 bg-light p-3 rounded">
+      <h4>Create New User</h4>
+      <form @submit.prevent="addUser">
+        <div class="form-group">
+          <label for="newUserEmail">Email</label>
+          <input type="email" class="form-control" id="newUserEmail" v-model="newUser.email" required>
+          <!-- Display an error message if the email is not valid -->
+          <div v-if="!isEmailValid(newUser.email)" class="text-danger">Invalid email address</div>
+        </div>
+        <div class="form-group">
+          <label for="newUserName">Name</label>
+          <input type="text" class="form-control" id="newUserName" v-model="newUser.name" required>
+          <!-- Display an error message if the name is not filled -->
+          <div v-if="!newUser.name" class="text-danger">Name is required</div>
+        </div>
+        <div class="form-group mb-3">
+          <label for="newUserCountry">Country</label>
+          <input type="text" class="form-control" id="newUserCountry" v-model="newUser.country" required>
+          <!-- Display an error message if the country is not filled -->
+          <div v-if="!newUser.country" class="text-danger">Country is required</div>
+        </div>
+        <button type="submit" class="btn btn-primary">Add User</button>
+      </form>
+    </div>
+
+
     <table class="table table-bordered table-hover">
       <thead class="thead-dark">
         <tr>
-          <th>#</th> <!-- Column for the index -->
-          <th>Email</th>
-          <th>Name</th>
-          <th>Country</th>
-          <th>Actions</th>
+          <th scope="col">#</th>
+          <th scope="col">Email</th>
+          <th scope="col">Name</th>
+          <th scope="col">Country</th>
+          <th scope="col">Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="(user, index) in users" :key="user.id">
-            <td>{{ index + 1 }}</td> <!-- Displaying the index starting from 1 -->
-            <td>{{ user.email }}</td>
-            <td>{{ user.name }}</td>
-            <td>{{ user.country }}</td>
-            <td>
-                <div class="button-group">
-                    <button class="btn btn-sm btn-primary" @click="confirmEdit(user)">Edit</button>
-                    <button class="btn btn-sm btn-danger" @click="confirmDeletion(user.id)">Delete</button>
-                </div>
-            </td>
+          <td>{{ index + 1 }}</td>
+          <td v-if="!user.editing">{{ user.email }}</td>
+          <td v-else><input type="email" class="form-control" v-model="user.editedEmail" /></td>
+          <td v-if="!user.editing">{{ user.name }}</td>
+          <td v-else><input type="text" class="form-control" v-model="user.editedName" /></td>
+          <td v-if="!user.editing">{{ user.country }}</td>
+          <td v-else><input type="text" class="form-control" v-model="user.editedCountry" /></td>
+          <td>
+            <div class="button-group">  
+                <button v-if="!user.editing" class="btn btn-primary btn-sm" @click="enableEditing(user)">Edit</button>
+                <button v-if="user.editing" class="btn btn-success btn-sm" @click="saveEdit(user)">Save</button>
+                <button class="btn btn-danger btn-sm" @click="confirmDeletion(user)">Delete</button>
+            </div>
+          </td>
         </tr>
       </tbody>
     </table>
-
-    <!-- Confirmation Modal -->
-    <div v-if="showModal" class="modal" tabindex="-1" role="dialog" id="editUserModal">
-        <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-            <h5 class="modal-title">Confirm Action</h5>
-            <button type="button" class="close" @click="closeModal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-            </div>
-            <div class="modal-body">
-            <p>{{ editModalMessage }}</p>
-            </div>
-            <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeModal">Cancel</button>
-            <button type="button" class="btn btn-primary" @click="modalConfirm">Confirm</button>
-            </div>
-        </div>
-        </div>
-    </div>
-
-    <div v-if="showCreateModal" class="modal" tabindex="-1" role="dialog" id="createUserModal">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Create User</h5>
-                <button type="button" class="close" @click="closeCreateModal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <!-- Add form fields for creating a new user here -->
-                <!-- Bind them to the newUser data property -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" @click="closeCreateModal">Cancel</button>
-                <button type="button" class="btn btn-primary" @click="createUser">Create User</button>
-            </div>
-            </div>
-        </div>
-    </div>
-
-
   </div>
 </template>
 
+
+
 <script>
-const axios = require('axios')
+const axios = require('axios');
 
 export default {
-  data() {
-    return {
-      users: [],
-      editModalMessage: '',
+    data() {
+        return {
+            users: [],
+            showCreateForm: false,
+            newUser: { email: '', name: '', country: '' },
+        };
+    },
+    methods: {
+      isEmailValid(email) {
+        // Use a regular expression to validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+      },
+        getAllUsers() {
+            const apiUrl = 'http://localhost:4040/user/get/all/';
+            axios.get(apiUrl)
+                .then(response => {
+                this.users = response.data.data.map(user => ({ ...user, editing: false }));
+                })
+                .catch(error => {
+                console.error('There was an error fetching the users:', error);
+                });
+        },
+        enableEditing(user) {
+            user.editing = true;
+            user.editedEmail = user.email;
+            user.editedName = user.name;
+            user.editedCountry = user.country;
+        },
+        saveEdit(user) {
+        // Check if user data has changed
+        if (
+          user.email !== user.editedEmail ||
+          user.name !== user.editedName ||
+          user.country !== user.editedCountry
+        ) {
+          console.log("ho ho")
+          // Prepare the data to send to the API
+          const data = {
+            id: user.id, // Replace with the actual user ID
+            name: user.editedName,
+            email: user.editedEmail,
+            country: user.editedCountry
+          };
 
-      // Modal visibility flags
-      showEditModal: false,
-      showDeleteModal: false,
-      showCreateModal: false,
+          axios
+            .put('http://localhost:4040/user/update/', data)
+            .then((response) => {
+              // Check if the update was successful
+              if (response.data.status === 'success') {
+                // Update the user's data locally
+                user.email = user.editedEmail;
+                user.name = user.editedName;
+                user.country = user.editedCountry;
+                user.editing = false;
 
-      // Modal messages
-      editModalMessage: '',
-      deleteModalMessage: '',
-      createModalMessage: '',
+                // You can also show a success message to the user if needed
+                alert('User updated successfully');
+              } else {
+                // Handle the case where the API request was successful but the update failed
+                // You can display an error message to the user
+                alert('Failed to update user: ' + response.data.message);
+              }
+            })
+            .catch((error) => {
+              // Handle errors from the API request (e.g., network issues)
+              console.error('Error updating user:', error);
+              // You can display an error message to the user
+              alert('An error occurred while updating user');
+            });
+        } else {
+          console.log("hey hey")
+          user.editing = false;
+        }
+      },
+        deleteUser(userId) {
+            // Implement API call to delete user
+            // Remove user from local array after successful deletion
+        },
+        confirmDeletion(user) {
+            if (confirm(`Are you sure you want to delete ${user.name}?`)) {
+                this.deleteUser(user.id);
+            }
+        },
+        deleteUser(userId) {
+            // Here you would make an API call to delete the user
+            // For demonstration, I'm just filtering out the user from the users array
+            this.users = this.users.filter(user => user.id !== userId);
 
-      // User data
-      userToEdit: null,
-      userToDelete: null,
-      newUser: {}, // Initialize as empty or with default values
-    };
-  },
-  methods: {
-    getAllUsers() {
-      const apiUrl = 'http://localhost:4040/user/get/all/'; // Replace with the actual URL to your API
-      axios.get(apiUrl)
-        .then(response => {
-          this.users = response.data.data; // Adjust if your response format is different
-        })
-        .catch(error => {
-          console.error('There was an error fetching the users:', error);
-        });
+            // Example of API call (uncomment and adjust when ready):
+            // axios.delete(`your-api-endpoint/users/${userId}`)
+            //   .then(response => {
+            //     // Handle successful deletion
+            //     // You might want to refresh the user list or show a success message
+            //   })
+            //   .catch(error => {
+            //     console.error('Error deleting user:', error);
+            //     // Handle error (e.g., show error message)
+            //   });
+        },
+        addUser() {
+          // Check if the required fields are filled
+          if (this.newUser.email && this.newUser.name && this.newUser.country) {
+              const apiUrl = 'http://localhost:4040/user/create/';
+              axios
+                  .post(apiUrl, {
+                      name: this.newUser.name,
+                      email: this.newUser.email,
+                      country: this.newUser.country,
+                  })
+                  .then((response) => {
+                      // Handle success, you can display a success message or perform other actions here
+                      console.log('User created successfully:', response.data);
+                      this.users.push({ ...this.newUser });
+                      this.newUser = { email: '', name: '', country: '' }; // Reset form
+                      this.showCreateForm = false; // Hide the form
+                  })
+                  .catch((error) => {
+                      // Handle error, you can display an error message or perform other actions here
+                      console.error('Error creating user:', error);
+                      // You may want to show an error message to the user
+                  });
+          } else {
+              // Show an error message if required fields are not filled
+              console.error('Name, email, and country are required.');
+              // You may want to show an error message to the user
+          }
+        },
+        toggleCreateForm() {
+            console.log("Opening Create Form");
+            this.showCreateForm = !this.showCreateForm;
+            this.newUser = { email: '', name: '', country: '' }; // Reset the form fields
+        }
     },
-    confirmEdit(user) {
-        this.userToEdit = user;
-        this.modalMessage = `Are you sure you want to edit the user: ${user.name}?`;
-        $('#editUserModal').modal('show'); // Changed to match the modal's ID
-    },
-    confirmDeletion(userId) {
-      this.userToDelete = userId;
-      this.modalMessage = 'Are you sure you want to delete this user?';
-      $('#confirmationModal').modal('show');
-    },
-    modalConfirm() {
-      if (this.userToEdit) {
-        this.editUser();
-      } else if (this.userToDelete) {
-        this.deleteUser();
-      }
-      $('#confirmationModal').modal('hide');
-    },
-    addUser() {
-      const apiUrl = '/path/to/your/createUser/endpoint'; // Replace with actual URL
-      axios.post(apiUrl, this.newUser)
-        .then(response => {
-          // Handle the success response
-          this.getAllUsers(); // Refresh the list of users
-        })
-        .catch(error => {
-          // Handle the error response
-          console.error('Error creating user:', error);
-        });
-    },
-    updateUser() {
-      const apiUrl = 'http://localhost:4040/user/update/'; // Replace with actual URL
-      axios.put(apiUrl, this.userToEdit)
-        .then(response => {
-          // Handle the success response
-          this.getAllUsers(); // Refresh the list of users
-        })
-        .catch(error => {
-          // Handle the error response
-          console.error('Error updating user:', error);
-        });
-    },
-    deleteUser() {
-      const apiUrl = 'http://localhost:4040/user/delete/'; // Replace with actual URL
-      axios.put(apiUrl, { id: this.userToDelete })
-        .then(response => {
-          // Handle the success response
-          this.getAllUsers(); // Refresh the list of users
-        })
-        .catch(error => {
-          // Handle the error response
-          console.error('Error deleting user:', error);
-        });
-    },
-
-    // Methods for Delete Modal
-    confirmDeletion(user) {
-      this.userToDelete = user;
-      this.deleteModalMessage = `Are you sure you want to delete ${user.name}?`;
-      this.showDeleteModal = true;
-    },
-    closeDeleteModal() {
-      this.showDeleteModal = false;
-    },
-    deleteUser() {
-      // Implement your logic to delete user
-      this.closeDeleteModal();
-    },
-
-    // Method for edit model
-    confirmEdit(user) {
-      this.userToEdit = user;
-      this.editModalMessage = `Are you sure you want to edit the user: ${user.name}?`;
-      this.showEditModal = true;
-    },
-    closeModal() {
-      this.showEditModal = false;
-    },
-    editUser() {
-      this.closeModal();
-    },
-
-    // API for create model
-    openCreateModal() {
-      this.createModalMessage = 'Enter details for the new user.';
-      this.showCreateModal = true;
-    },
-    closeCreateModal() {
-      this.showCreateModal = false;
-    },
-    createUser() {
-      // Implement your logic to create a new user
-      this.closeCreateModal();
-    },
-  },
-  mounted() {
-    this.getAllUsers();
-  }
+    mounted() {
+        this.getAllUsers();
+    }
 }
 </script>
 

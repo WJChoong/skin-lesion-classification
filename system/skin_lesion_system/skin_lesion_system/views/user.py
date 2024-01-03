@@ -20,7 +20,13 @@ print(f"salt2: {salt}")
 def getAllUsers(request):
     if request.method == 'GET':
         with connection.cursor() as cursor:
-            sql_query = "SELECT id, email, name, country FROM user WHERE status=1"
+            sql_query = """
+                SELECT u.id, u.email, u.name, u.country
+                FROM user u
+                LEFT JOIN auth a ON u.id = a.user_id
+                WHERE u.status = 1
+                AND (a.level IS NULL OR a.level != 1)
+            """
             cursor.execute(sql_query)
             users_data = cursor.fetchall()
             cursor.close()
@@ -128,7 +134,7 @@ def updateUser(request):
         if user_id and (name or email or country):
             # Check if the user exists
             with connection.cursor() as cursor:
-                sql_query = "SELECT id FROM user WHERE id = %s"
+                sql_query = "SELECT id FROM user WHERE id = %s AND status = 1"
                 cursor.execute(sql_query, [user_id])
                 existing_user = cursor.fetchone()
                 cursor.close()
