@@ -3,20 +3,20 @@
     <div class="row">
       <!-- User Details Form Section -->
       <div class="col-md-6 mb-3">
-        <div class="card">
+        <div class="card bg-secondary">
           <div class="card-body">
-            <h5 class="card-title">Update User Details</h5>
+            <h5 class="card-title text-white">Update User Details</h5>
             <!-- Form elements here -->
             <form @submit.prevent="updateDetails">
-              <div class="form-group">
+              <div class="form-group text-white">
                 <label for="name">Name</label>
                 <input type="text" id="name" class="form-control" v-model="user.name" :readonly="!editing">
               </div>
-              <div class="form-group">
+              <div class="form-group text-white">
                 <label for="email">Email</label>
                 <input type="email" id="email" class="form-control" v-model="user.email" :readonly="!editing">
               </div>
-              <div class="form-group">
+              <div class="form-group text-white">
                 <label for="country">Country</label>
                 <input type="text" id="country" class="form-control" v-model="user.country" :readonly="!editing">
               </div>
@@ -48,20 +48,20 @@
 
       <!-- Change Password Form Section -->
       <div class="col-md-6 mb-3">
-        <div class="card">
+        <div class="card bg-secondary">
           <div class="card-body">
-            <h5 class="card-title">Change Password</h5>
+            <h5 class="card-title text-white">Change Password</h5>
             <!-- Form elements here -->
             <form @submit.prevent="changePassword">
-                <div class="form-group">
+                <div class="form-group text-white">
                     <label for="oldPassword">Old Password</label>
                     <input type="password" id="oldPassword" class="form-control" v-model="password.oldPassword">
                 </div>
-                <div class="form-group">
+                <div class="form-group text-white">
                     <label for="newPassword">New Password</label>
                     <input type="password" id="newPassword" class="form-control" v-model="password.newPassword">
                 </div>
-                <div class="form-group">
+                <div class="form-group text-white">
                     <label for="confirmNewPassword">Re-enter New Password</label>
                     <input type="password" id="confirmNewPassword" class="form-control" v-model="password.confirmNewPassword">
                 </div>
@@ -88,6 +88,7 @@ export default {
       loading: false,
       successMessage: '',
       errorMessage: '',
+      originalUserData: null,
       user: {
         name: '',
         email: '',
@@ -119,6 +120,7 @@ export default {
           this.user.name = name;
           this.user.email = email;
           this.user.country = country;
+          this.originalUserData = { ...this.user };
         } else {
           // Handle any errors, such as user not found
           console.error(response.data.message);
@@ -130,6 +132,11 @@ export default {
       }
     },
     async updateDetails() {
+      if (!this.canSubmit) {
+        this.errorMessage = "Please fill all fields correctly.";
+        this.autoHideMessage();
+        return;
+      }
       this.loading = true;
       try {
         const response = await axios.put('http://localhost:4040/user/update/', {
@@ -152,6 +159,7 @@ export default {
       }
       this.loading = false;
       this.editing = false;
+      this.autoHideMessage()
     },
     async changePassword() {
       this.loading = true;
@@ -173,10 +181,17 @@ export default {
       }
       this.loading = false;
     },
+    autoHideMessage() {
+      setTimeout(() => {
+        this.successMessage = '';
+        this.errorMessage = '';
+      }, 2500);
+    },
     enableEditing() {
       this.editing = true;
     },
     cancelEditing() {
+      this.user = { ...this.originalUserData };
       this.editing = false;
     },
   },
@@ -190,12 +205,28 @@ export default {
       }
     },
     isAuthenticated:{
-        get() {
-            return this.$store.state.isAuthenticated;
-        },
-        set(value) {
-            this.$store.commit('SET_AUTHENTICATED', value);
-        }
+      get() {
+        return this.$store.state.isAuthenticated;
+      },
+      set(value) {
+        this.$store.commit('SET_AUTHENTICATED', value);
+      }
+    },
+    isNameValid() {
+      return this.user.name.trim() !== '';
+    },
+    isEmailValid() {
+      const pattern = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+      return pattern.test(this.user.email);
+    },
+    isCountryValid() {
+      return this.user.country.trim() !== '';
+    },
+    canSubmit() {
+      console.log("this.isNameValid", this.isNameValid)
+      console.log("this.isEmailValid", this.isEmailValid)
+      console.log("this.isCountryValid", this.isCountryValid)
+      return this.isNameValid && this.isEmailValid && this.isCountryValid;
     }
   }
 };

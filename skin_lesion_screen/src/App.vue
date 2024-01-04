@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" class="custom-dark-bg">
     <NavigationBar/>
     <router-view/>
   </div>
@@ -15,3 +15,10 @@ export default {
   }
 };
 </script>
+
+<style>
+.custom-dark-bg {
+  background-color: #343a40; 
+  min-height: 100vh;
+}
+</style>

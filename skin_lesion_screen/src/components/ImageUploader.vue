@@ -1,11 +1,11 @@
 <template>
-  <div class="container mt-3">
-    <div class="card">
+    <div class="container">
+    <div class="card mt-4 bg-secondary">
       <div class="card-body">
-        <h5 class="card-title">Image Uploader</h5>
+        <h5 class="card-title text-white">Upload Your Image Here</h5>
         <!-- Image preview area -->
         <div v-if="imageData" class="image-preview" v-bind:style="{ backgroundImage: 'url(' + imageData + ')' }"></div>
-        <div v-if="!imageData" class="image-preview bg-light d-flex justify-content-center align-items-center">
+        <div v-if="!imageData" class="image-preview bg-white d-flex justify-content-center align-items-center">
           <span class="text-muted">No Image Selected</span>
         </div>
 
@@ -14,12 +14,12 @@
 
         <!-- Browse and Check buttons -->
         <div class="mt-3">
-          <button class="btn btn-primary" @click="browseImage">Browse Image</button>
-          <button class="btn btn-secondary" @click="checkImage">Check</button>
+          <button class="btn btn-primary me-2" @click="browseImage">Browse Image</button>
+          <button class="btn btn-primary" @click="checkImage">Check</button>
         </div>
 
         <!-- Placeholder for results -->
-        <p class="mt-3">Result: {{ resultMessage }}</p>
+        <p class="mt-3 text-white">Result: {{ resultMessage }}</p>
         <!-- Include other elements for results here -->
       </div>
     </div>

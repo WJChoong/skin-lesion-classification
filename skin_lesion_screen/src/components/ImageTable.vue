@@ -1,40 +1,42 @@
 <template>
-  <div class="container mt-4">
-    <div v-if="isLoading" class="text-center">
-      <div class="spinner-border text-primary" role="status">
-        <span class="sr-only">Loading...</span>
+  <div class="container">
+    <div class="mt-4 bg-secondary">
+      <div v-if="isLoading" class="text-center">
+        <div class="spinner-border text-primary" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
       </div>
+      <table class="table table-bordered rounded">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Image</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(item, index) in images" :key="item.id">
+            <th>{{ index + 1 }}</th>
+            <td>
+              <img :src="item.image" class="img-fluid limited-size-img" :alt="'Image ' + (index + 1)" />
+            </td>
+            <td>
+              <select v-model="selectedClass" class="form-control">
+                <option value="" disabled selected>--- Select Class ---</option> <!-- Placeholder option -->
+                <option v-for="classItem in classes" :value="classItem.id" :key="classItem.id">
+                  {{ classItem.name }}
+                </option>
+              </select>
+              <button class="btn btn-primary mt-2 me-2" @click="classifyImage(item, index)">Classify</button>
+              <button class="btn btn-danger mt-2" @click="deleteImage(item, index)">Delete</button>
+            </td>
+          </tr>
+          <tr v-if="images.length === 0">
+            <td colspan="3" class="text-center">There are no images to be categorized.</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    <table class="table table-bordered">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Image</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(item, index) in images" :key="item.id">
-          <th>{{ index + 1 }}</th>
-          <td>
-            <img :src="item.image" class="img-fluid limited-size-img" :alt="'Image ' + (index + 1)" />
-          </td>
-          <td>
-            <select v-model="selectedClass" class="form-control">
-              <option value="" disabled selected>--- Select Class ---</option> <!-- Placeholder option -->
-              <option v-for="classItem in classes" :value="classItem.id" :key="classItem.id">
-                {{ classItem.name }}
-              </option>
-            </select>
-            <button class="btn btn-primary mt-2 me-2" @click="classifyImage(item, index)">Classify</button>
-            <button class="btn btn-danger mt-2" @click="deleteImage(item, index)">Delete</button>
-          </td>
-        </tr>
-        <tr v-if="images.length === 0">
-          <td colspan="3" class="text-center">There are no images to be categorized.</td>
-        </tr>
-      </tbody>
-    </table>
   </div>
 </template>
 

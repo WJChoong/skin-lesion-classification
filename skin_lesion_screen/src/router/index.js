@@ -23,7 +23,7 @@ const routes = [
     component: Profile,
   },
   {
-    path: "/verify",
+    path: "/image",
     name: "ImageTable",
     component: ImageTable,
   },
@@ -33,7 +33,7 @@ const routes = [
     component: ResetPassword,
   },
   {
-    path: "/manageuser",
+    path: "/user",
     name: "ManageUser",
     component: ManageUser,
   },

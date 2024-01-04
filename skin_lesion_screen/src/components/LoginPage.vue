@@ -11,15 +11,15 @@
           </div>
           <div class="mb-3">
             <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="password" v-model="password" required placeholder="Password">
-            <div v-if="loginError" class="invalid-feedback d-block">{{ loginErrorMessage }}</div>
+            <input type="password" class="form-control" id="password" v-model="password" required placeholder="Password" @focus="passwordTouched = true" @blur="handlePasswordBlur">
+            <div v-if="passwordTouched && isPasswordBlank" class="invalid-feedback d-block">Password is required.</div>
           </div>
           <div class="mb-4 form-check">
             <input type="checkbox" class="form-check-input" id="remember-me" v-model="rememberMe">
             <label class="form-check-label" for="remember-me">Remember me</label>
           </div>
           <div class="d-grid gap-2">
-            <button type="submit" class="btn btn-primary" :disabled="emailError">Login</button>
+            <button type="submit" class="btn btn-primary" :disabled="emailError || isPasswordBlank || isEmailBlank">Login</button>
           </div>
         </form>
         <div class="mt-4 text-center">
@@ -40,9 +40,18 @@ export default {
       rememberMe: false,
       loginError: false,
       emailError: false,
+      passwordTouched: false,
       loginErrorMessage: 'Invalid username and/or password.',
       emailErrorMessage: 'Please enter a valid email address.'
     };
+  },
+  computed: {
+    isPasswordBlank() {
+      return this.password.trim() === '';
+    },
+    isEmailBlank() {
+      return this.email.trim() === '';
+    }
   },
   methods: {
     async login() {
@@ -94,8 +103,26 @@ export default {
     validateEmail() {
       // Simple regex for basic email validation
       const pattern = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
-      this.emailError = !pattern.test(this.email);
-    }
+
+      if (this.email.trim() === '') {
+        // Handle empty email field
+        this.emailError = true;
+        this.emailErrorMessage = 'Email address is required.';
+      } else if (!pattern.test(this.email)) {
+        // Handle invalid email format
+        this.emailError = true;
+        this.emailErrorMessage = 'Please enter a valid email address.';
+      } else {
+        // Email is valid
+        this.emailError = false;
+        this.emailErrorMessage = '';
+      }
+    },
+    handlePasswordBlur() {
+      if (this.password.trim() === '') {
+        this.passwordTouched = true;
+      }
+    },
   },
   created() {
     const rememberedEmail = localStorage.getItem('rememberedEmail');
