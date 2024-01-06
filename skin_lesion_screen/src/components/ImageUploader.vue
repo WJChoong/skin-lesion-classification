@@ -14,8 +14,11 @@
 
         <!-- Browse and Check buttons -->
         <div class="mt-3">
-          <button class="btn btn-primary me-2" @click="browseImage">Browse Image</button>
-          <button class="btn btn-primary" @click="checkImage">Check</button>
+            <button class="btn btn-primary me-2" @click="browseImage" :disabled="isLoading">Browse Image</button>
+            <button class="btn btn-primary" @click="checkImage">
+                <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                {{ isLoading ? 'Checking...' : 'Check' }}
+            </button>
         </div>
 
         <!-- Placeholder for results -->
@@ -35,15 +38,18 @@ export default {
       imageFile: null,
       imageData: null,
       resultMessage: null,
+      isLoading: false
     };
   },
   methods: {
     browseImage() {
+      this.resultMessage = null;
       this.$refs.fileInput.click();
     },
     previewImage(event) {
       this.imageFile = event.target.files[0];
       this.imageData = URL.createObjectURL(this.imageFile);
+      this.resultMessage = null;
     },
     async checkImage() {
       if (!this.imageFile) {
@@ -51,9 +57,9 @@ export default {
         return;
       }
 
+      this.isLoading = true;
       let formData = new FormData();
       formData.append('image', this.imageFile);
-      console.log("hello---")
 
       try {
         const response = await axios.post('http://localhost:4040/images/upload/', formData, {
@@ -63,27 +69,22 @@ export default {
         });
         // Handle success
         this.resultMessage = response.data.message;
-        console.log('Image uploaded successfully:', response);
       } catch (error) {
-        // More detailed error handling
-        if (error.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
-          console.error('Error data:', error.response.data);
-          console.error('Error status:', error.response.status);
-          console.error('Error headers:', error.response.headers);
-          this.resultMessage = 'Error: ' + error.response.data.message;
-        } else if (error.request) {
-          // The request was made but no response was received
-          console.error('Error request:', error.request);
-          this.resultMessage = 'No response from the server.';
-        } else {
-          // Something happened in setting up the request that triggered an Error
-          console.error('Error message:', error.message);
-          this.resultMessage = 'Error: ' + error.message;
-        }
+        // Detailed error handling
+        this.handleError(error);
+      } finally {
+        this.isLoading = false; // Stop loading
       }
     },
+    handleError(error) {
+      if (error.response) {
+        this.resultMessage = 'Error: ' + error.response.data.message;
+      } else if (error.request) {
+        this.resultMessage = 'No response from the server.';
+      } else {
+        this.resultMessage = 'Error: ' + error.message;
+      }
+    }
   },
   computed: {
     isAuthenticated() {

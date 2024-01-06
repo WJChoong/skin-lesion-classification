@@ -20,7 +20,20 @@ from datetime import datetime
 from .auth import generateId
 from ..common.message import successMessage, failMessage
 
-model = load_model('./skin_lesion_system/ml_model/vgg16.h5')        
+model = load_model('./skin_lesion_system/ml_model/vgg16.h5')     
+
+def preprocess_image(image_path):
+    # Load and resize the image
+    img = load_img(image_path, target_size=(224, 224, 3))
+    img_array = img_to_array(img)
+
+    # Normalize the image (adjust this according to how you trained your model)
+    img_array = img_array / 255.0
+
+    # Add a batch dimension
+    img_array = np.expand_dims(img_array, axis=0)
+
+    return img_array   
 
 @csrf_exempt
 def checkLesion(request):
@@ -47,17 +60,14 @@ def checkLesion(request):
         
         # Preprocess the uploaded image
         img_full_path = os.path.join(settings.MEDIA_ROOT, 'unlabelled', filename)
-        img = load_img(img_full_path, target_size=(224, 224, 3))  # Adjust target size to match model's expected input
-        img_array = img_to_array(img)
-        img_array = np.expand_dims(img_array, axis=0)  # Model expects a batch of images
-        img_array /= 255.0  # Scale pixel values to [0, 1]
+        img = preprocess_image(img_full_path)
 
         # Predict the class of the image
-        prediction = model.predict(img_array)
+        prediction = model.predict(img)
         predicted_class = np.argmax(prediction, axis=-1)  # Adjust if your model outputs different results
 
         # # You can map the predicted class index to an actual label
-        label_map = {0: 'Class A', 1: 'Class B', 2: 'Class C'} 
+        label_map = {0: 'Melanoma', 1: 'Melanocytic Nevus', 2: 'Bascal Cell Carcinoma', 3: 'Benign Keratosis', 4: 'Unkown'} 
         predicted_label = label_map[predicted_class[0]]
         
         return successMessage("It is a "+ predicted_label +" images")

@@ -4,12 +4,6 @@
       <div class="card-body">
         <h2 class="card-title text-white">Image Categorization</h2>
 
-        <div v-if="isLoading" class="text-center">
-          <div class="spinner-border text-primary" role="status">
-            <span class="sr-only">Loading...</span>
-          </div>
-        </div>
-
         <div v-if="successMessage" class="alert alert-success">
           {{ successMessage }}
         </div>
@@ -32,14 +26,14 @@
                 <img :src="item.image" class="img-fluid limited-size-img" :alt="'Image ' + (index + 1)" />
               </td>
               <td>
-                <select v-model="selectedClass" class="form-control">
+                <select v-model="item.selectedClass" class="form-control">
                   <option value="" disabled selected>--- Select Class ---</option>
                   <option v-for="classItem in classes" :value="classItem.id" :key="classItem.id">
                     {{ classItem.name }}
                   </option>
                 </select>
                 <button class="btn btn-primary mt-2 me-2" @click="classifyImage(item, index)" :disabled="isLoading">Classify</button>
-                <button class="btn btn-danger mt-2" @click="deleteImage(item, index)" :disabled="isLoading">Delete</button>
+                <button class="btn btn-danger mt-2" @click="confirmDeletion(item, index)" :disabled="isLoading">Delete</button>
               </td>
             </tr>
             <tr v-if="images.length === 0">
@@ -69,6 +63,7 @@ export default {
         { id: 'DF', name: 'Dermatofibroma' },
         { id: 'VASC', name: 'Vascular Lesion' },
         { id: 'SCC', name: 'Squamous Cell Carcinoma' },
+        { id: 'UNK', name: 'Unknown' },
       ],
       selectedClass: '',
       isLoading: false,
@@ -85,16 +80,17 @@ export default {
   methods: {
     loadData() {
       axios.get('http://localhost:4040/images/get/')
-      .then(response => {
-        this.images = response.data.data
-      })
-      .catch(error => console.error('Error:', error));
+        .then(response => {
+          this.images = response.data.data.map(image => ({
+            ...image,
+            selectedClass: ''
+          }));
+        })
+        .catch(error => console.error('Error:', error));
     },
     async classifyImage(item, index) {
-      const selectedClass = this.selectedClass;
-      const imageId = item.id;
 
-      if (!this.selectedClass) {
+      if (!item.selectedClass) {
         this.errorMessage = "Please select a class before classifying.";
         this.autoHideMessage();
         return;
@@ -105,36 +101,53 @@ export default {
       try {
         const response = await axios.post('http://localhost:4040/category/images/', {
           user_id: this.user_id,
-          image_id: imageId,
-          category: selectedClass
+          image_id: item.id,
+          category: item.selectedClass
         });
+
+        this.successMessage = "Image classified successfully.";
+        this.autoHideMessage();
 
         this.loadData()
       } catch (error) {
         console.error('Error in classifying the image:', error);
       } finally {
-        this.isLoading = false; // Stop loading regardless of outcome
+        this.isLoading = false;
+      }
+    },
+    confirmDeletion(item, index) {
+      console.log("item, index", item.id, index);
+      if (confirm(`Are you sure you want to delete this image?`)) {
+        console.log("Yes, confirmed deletion");
+        this.deleteImage(item, index);
+        this.isLoading = true;
       }
     },
     deleteImage(item, index) {
-      if (!confirm("Are you sure you want to delete this image?")) {
-        return;
+      console.log("Delete button triggered")
+      try{
+        axios
+          .put('http://localhost:4040/images/delete/', { id: item.id })
+          .then((response) => {
+            console.log("Delete process triggered")
+            if (response.data.status === "success") {
+              this.successMessage = "The image deleted successfully.";
+              this.autoHideMessage();
+            } else {
+              console.error('Failed to delete image:', response.data.message);
+              this.errorMessage = 'Failed to delete image: ' + response.data.message;
+            }
+            this.autoHideMessage();
+          })
+      } catch(error){
+        console.error('Error deleting image:', error);
+        this.errorMessage = 'Error occurred while deleting the image.';
+        this.autoHideMessage();
+      }finally{
+        this.isLoading = false;
+        this.loadData();
       }
-      axios
-        .put('http://localhost:4040/images/delete/', { id: item.id }) // Replace with your actual API endpoint
-        .then((response) => {
-          // Check the response and handle success or failure as needed
-          if (response.status === "success") {
-            this.loadData();
-          } else {
-            // Handle API error (e.g., image not found)
-            alert('Failed to delete image: ' + response.data.message);
-          }
-        })
-        .catch((error) => {
-          // Handle network or other errors
-          console.error('Error deleting image:', error);
-        });
+      console.log("Delete process done")
     },
     autoHideMessage() {
       setTimeout(() => {
