@@ -33,9 +33,9 @@
                 Edit
               </button>
               <div v-if="editing">
-                <button type="submit" class="btn btn-success mt-3" style="margin-right: 8px;">
-                    Save Changes
-                <span v-if="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <button type="submit" class="btn btn-success mt-3" style="margin-right: 8px;" :disabled="updateUserDetailsLoading">
+                  Save Changes
+                  <span v-if="updateUserDetailsLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                 </button>
                 <button type="button" class="btn btn-secondary mt-3" @click="cancelEditing">
                     Cancel
@@ -65,9 +65,15 @@
                     <label for="confirmNewPassword">Re-enter New Password</label>
                     <input type="password" id="confirmNewPassword" class="form-control" v-model="password.confirmNewPassword">
                 </div>
-                <button type="submit" class="btn btn-primary mt-3" :disabled="loading">
-                    Change Password
-                    <span v-if="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <div v-if="passwordChangeSuccessMessage" class="alert alert-success mt-3">
+                  {{ passwordChangeSuccessMessage }}
+                </div>
+                <div v-if="passwordChangeErrorMessage" class="alert alert-danger mt-3">
+                  {{ passwordChangeErrorMessage }}
+                </div>
+                <button type="submit" class="btn btn-primary mt-3" :disabled="changePasswordLoading">
+                  Change Password
+                  <span v-if="changePasswordLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                 </button>
             </form>
           </div>
@@ -78,7 +84,7 @@
 </template>
 
 <script>
-const axios = require('axios'); // Ensure you have axios installed or use a different HTTP client
+const axios = require('axios');
 
 export default {
   data() {
@@ -98,7 +104,11 @@ export default {
         oldPassword: '',
         newPassword: '',
         confirmNewPassword: ''
-      }
+      },
+      passwordChangeSuccessMessage: '',
+      passwordChangeErrorMessage: '',
+      updateUserDetailsLoading: false,
+      changePasswordLoading: false,
     };
   },
   created() {
@@ -133,12 +143,13 @@ export default {
     },
     async updateDetails() {
       if (!this.canSubmit) {
-        this.errorMessage = "Please fill all fields correctly.";
+        this.errorMessage = "Please fill all the fields correctly.";
         this.autoHideMessage();
         return;
       }
-      this.loading = true;
+      this.updateUserDetailsLoading = true;
       try {
+        console.log("user_id", this.user_id)
         const response = await axios.put('http://localhost:4040/user/update/', {
           id: this.user_id,
           name: this.user.name,
@@ -157,34 +168,78 @@ export default {
         // Handle the error
         console.error('An error occurred:', error);
       }
-      this.loading = false;
+      this.updateUserDetailsLoading = false;
       this.editing = false;
       this.autoHideMessage()
     },
     async changePassword() {
-      this.loading = true;
+      this.changePasswordLoading = true;
+
+      // Check if any of the password fields are blank
+      if (!this.password.oldPassword.trim() || 
+          !this.password.newPassword.trim() || 
+          !this.password.confirmNewPassword.trim()) {
+        this.passwordChangeErrorMessage = "All fields are required.";
+        this.changePasswordLoading = false;
+        this.autoHidePasswordChangeMessage();
+        return;
+      }
+
+      // Check if the new password and confirm new password match
+      if (this.password.newPassword !== this.password.confirmNewPassword) {
+        this.passwordChangeErrorMessage = "New passwords are not the same.";
+        this.changePasswordLoading = false;
+        this.autoHidePasswordChangeMessage();
+        return;
+      }
+
+      // Check if the old password and new password are the same
+      if (this.password.oldPassword === this.password.newPassword) {
+        this.passwordChangeErrorMessage = "New password cannot be the same as the old password.";
+        this.changePasswordLoading = false;
+        this.autoHidePasswordChangeMessage();
+        return;
+      }
+
       try {
-        const response = await axios.put('/change-password-api-endpoint', {
+        const response = await axios.put('http://localhost:4040/auth/change/', {
           user_id: this.user_id,
           old_password: this.password.oldPassword,
           new_password: this.password.newPassword
         });
+
         // On success
         if (response.data.status === 'success') {
-          // Handle success
+          this.passwordChangeSuccessMessage = "Password successfully changed.";
+          this.password.oldPassword = '';
+          this.password.newPassword = '';
+          this.password.confirmNewPassword = '';
+          
         } else {
           // Handle failure
+          this.passwordChangeErrorMessage = response.data.message || 'Failed to change password. Please try again.';
+          this.password.oldPassword = '';
+          this.password.newPassword = '';
+          this.password.confirmNewPassword = '';
         }
       } catch (error) {
         // Handle the error
         console.error('An error occurred:', error);
+        this.passwordChangeErrorMessage = 'An unexpected error occurred. Please try again.';
       }
-      this.loading = false;
+      this.changePasswordLoading = false;
+      this.autoHidePasswordChangeMessage();
     },
     autoHideMessage() {
       setTimeout(() => {
         this.successMessage = '';
         this.errorMessage = '';
+      }, 2500);
+    },
+    autoHidePasswordChangeMessage() {
+      setTimeout(() => {
+        this.passwordChangeSuccessMessage = '';
+        this.passwordChangeErrorMessage = '';
       }, 2500);
     },
     enableEditing() {
@@ -227,6 +282,13 @@ export default {
       console.log("this.isEmailValid", this.isEmailValid)
       console.log("this.isCountryValid", this.isCountryValid)
       return this.isNameValid && this.isEmailValid && this.isCountryValid;
+    },
+    isPasswordValid() {
+      return this.password.oldPassword.trim() !== '' &&
+             this.password.newPassword.trim() !== '' &&
+             this.password.confirmNewPassword.trim() !== '' &&
+             this.password.newPassword === this.password.confirmNewPassword &&
+             this.password.oldPassword !== this.password.newPassword;
     }
   }
 };

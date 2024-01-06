@@ -9,13 +9,13 @@
         <li class="nav-item" v-if="isAuthenticated">
           <router-link to="/profile" class="nav-link">Profile</router-link>
         </li>
-        <li class="nav-item" v-if="isAuthenticated && user_level === 1">
+        <li class="nav-item" v-if="isAuthenticated && user_level === '1'">
           <router-link to="/user" class="nav-link">Manage User</router-link>
         </li>
         <li class="nav-item" v-if="isAuthenticated">
           <router-link to="/image" class="nav-link">Manage Image</router-link>
         </li>
-        <li class="nav-item" v-else>
+        <li class="nav-item text-white" v-else>
           <router-link to="/login" class="nav-link">Login</router-link>
         </li>
       </ul>
@@ -31,25 +31,17 @@ export default {
   name: 'NavigationBar',
   data() {
     return {
-      auth: false
+      auth: false,
     };
   },
   components: {
     LoginPage
   },
-  methods: {
-    receiveMessage(message) {
-      console.log('Message received from child:', message);
-    }
-  },
   computed: {
     ...mapState({
       isAuthenticated: state => state.isAuthenticated,
-      user_level: state => state.user_lelve
+      user_level: state => state.user_level
     }),
-    // ...mapGetters([
-    //   'user_level'
-    // ])
   }
 };
 </script>

@@ -34,10 +34,7 @@ def hash_password(password, salt):
 
 def verify_password(stored_hash, salt, password_to_check):
     # Hash the password to check
-    print(f"Password to check: {password_to_check}")
     new_hash = hash_password(password_to_check, salt)
-    print(f"New Hash: {new_hash}")
-
     return new_hash == stored_hash
 
 def generatePassword(length=12, safe_characters=None):
@@ -104,7 +101,6 @@ def login(request):
                         print(f"db_password: {db_password}")
                         
                         is_correct = verify_password(db_password, salt, password)
-                        print(f"is_correct: {is_correct}")
 
                         if is_correct:
                             return successMessage('Login successful.', { "level": level, "user_id": user_id})
@@ -173,8 +169,11 @@ def changePassword(request):
             old_password = data.get('old_password')
             new_password = data.get('new_password')
         except json.JSONDecodeError:
-            return JsonResponse({'status': 'error', 'message': 'Invalid JSON data.'}, status=400)
+            return failMessage('Invalid JSON data.')
 
+        print(f"user_id: {user_id}")
+        print(f"old_password: {old_password}")
+        print(f"new_password: {new_password}")
         if user_id and old_password and new_password:
             with connection.cursor() as cursor:
                 sql_query = "SELECT id FROM user WHERE id = %s AND status = 1 "
@@ -189,12 +188,17 @@ def changePassword(request):
 
                     if password_data:
                         db_password = password_data[0]
-                        if verify_password(db_password, salt, old_password):
+                        is_correct = verify_password(db_password, salt, old_password)
+                        print(f"is_correct: {is_correct}")
+                        if is_correct:
+                            print(f"user_id: {user_id}")
                             hashed_new_password = hash_password(new_password, salt)
+                            print(f"hashed_new_password: {hashed_new_password}")
                             sql_query = "UPDATE auth SET password = %s WHERE user_id = %s AND status = 1"
                             cursor.execute(sql_query, [hashed_new_password, user_id])
                             return successMessage('Password changed successfully.')
                         else:
+                            print("ghello guys")
                             return failMessage('Old password is incorrect.')
                     else:
                         return failMessage('Invalid User.')

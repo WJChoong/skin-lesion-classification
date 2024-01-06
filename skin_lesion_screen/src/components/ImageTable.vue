@@ -1,44 +1,57 @@
 <template>
-  <div class="container">
-    <div class="mt-4 bg-secondary">
-      <div v-if="isLoading" class="text-center">
-        <div class="spinner-border text-primary" role="status">
-          <span class="sr-only">Loading...</span>
+  <div class="container mt-3">
+    <div class="card bg-secondary">
+      <div class="card-body">
+        <h2 class="card-title text-white">Image Categorization</h2>
+
+        <div v-if="isLoading" class="text-center">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
         </div>
+
+        <div v-if="successMessage" class="alert alert-success">
+          {{ successMessage }}
+        </div>
+        <div v-if="errorMessage" class="alert alert-danger">
+          {{ errorMessage }}
+        </div>
+
+        <table class="table table-bordered table-hover rounded mb-3">
+          <thead class="thead-dark">
+            <tr>
+              <th>#</th>
+              <th>Image</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, index) in images" :key="item.id">
+              <th>{{ index + 1 }}</th>
+              <td>
+                <img :src="item.image" class="img-fluid limited-size-img" :alt="'Image ' + (index + 1)" />
+              </td>
+              <td>
+                <select v-model="selectedClass" class="form-control">
+                  <option value="" disabled selected>--- Select Class ---</option>
+                  <option v-for="classItem in classes" :value="classItem.id" :key="classItem.id">
+                    {{ classItem.name }}
+                  </option>
+                </select>
+                <button class="btn btn-primary mt-2 me-2" @click="classifyImage(item, index)" :disabled="isLoading">Classify</button>
+                <button class="btn btn-danger mt-2" @click="deleteImage(item, index)" :disabled="isLoading">Delete</button>
+              </td>
+            </tr>
+            <tr v-if="images.length === 0">
+              <td colspan="3" class="text-center">There are no images to be categorized.</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <table class="table table-bordered rounded">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Image</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(item, index) in images" :key="item.id">
-            <th>{{ index + 1 }}</th>
-            <td>
-              <img :src="item.image" class="img-fluid limited-size-img" :alt="'Image ' + (index + 1)" />
-            </td>
-            <td>
-              <select v-model="selectedClass" class="form-control">
-                <option value="" disabled selected>--- Select Class ---</option> <!-- Placeholder option -->
-                <option v-for="classItem in classes" :value="classItem.id" :key="classItem.id">
-                  {{ classItem.name }}
-                </option>
-              </select>
-              <button class="btn btn-primary mt-2 me-2" @click="classifyImage(item, index)">Classify</button>
-              <button class="btn btn-danger mt-2" @click="deleteImage(item, index)">Delete</button>
-            </td>
-          </tr>
-          <tr v-if="images.length === 0">
-            <td colspan="3" class="text-center">There are no images to be categorized.</td>
-          </tr>
-        </tbody>
-      </table>
     </div>
   </div>
 </template>
+
 
 <script>
 const axios = require('axios')
@@ -59,6 +72,8 @@ export default {
       ],
       selectedClass: '',
       isLoading: false,
+      successMessage: '',
+      errorMessage: '',
     };
   },
   created() {
@@ -79,8 +94,9 @@ export default {
       const selectedClass = this.selectedClass;
       const imageId = item.id;
 
-      if (!selectedClass) {
-        alert("Please select a class.");
+      if (!this.selectedClass) {
+        this.errorMessage = "Please select a class before classifying.";
+        this.autoHideMessage();
         return;
       }
 
@@ -101,7 +117,9 @@ export default {
       }
     },
     deleteImage(item, index) {
-      // Make a DELETE request to the Django API
+      if (!confirm("Are you sure you want to delete this image?")) {
+        return;
+      }
       axios
         .put('http://localhost:4040/images/delete/', { id: item.id }) // Replace with your actual API endpoint
         .then((response) => {
@@ -118,10 +136,15 @@ export default {
           console.error('Error deleting image:', error);
         });
     },
+    autoHideMessage() {
+      setTimeout(() => {
+        this.successMessage = '';
+        this.errorMessage = '';
+      }, 2500);
+    },
   },
   mounted() {
     this.loadData();
-    this.isLoading = false;
   },
   computed: {
     user_id: {
@@ -145,6 +168,10 @@ export default {
 </script>
 
 <style>
+.table {
+  border-radius: 10px;
+}
+
 .limited-size-img {
   max-width: 400px;
   max-height: 300px;

@@ -79,8 +79,9 @@ export default {
             }
             
             // Update user_level and user_id in the Vuex store
+            console.log("data", data.data)
             this.$store.commit('SET_AUTHENTICATED', true);
-            this.$store.commit('SET_USER_LEVEL', data.data.user_level);
+            this.$store.commit('SET_USER_LEVEL', data.data.level);
             this.$store.commit('SET_USER_ID', data.data.user_id);
 
             // Redirect to the home page

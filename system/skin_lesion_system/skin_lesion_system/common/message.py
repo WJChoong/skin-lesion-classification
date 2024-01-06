@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 
-def failMessage(message, status=400):
+def failMessage(message, status=200):
     return JsonResponse({'status': 'error', 'message': message}, status=status)
 
 def successMessage(message, data=None):
