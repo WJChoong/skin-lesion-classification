@@ -66,7 +66,7 @@ export default {
           this.successMessage = response.data.message;
           setTimeout(() => {
             this.$router.push('/');
-          }, 3000);
+          }, 2500);
         })
         .catch(error => {
           this.loading = false;

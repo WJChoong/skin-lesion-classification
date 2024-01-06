@@ -252,13 +252,11 @@ export default {
         this.deletingUser = true;
         this.clearUserMessages();
 
-        const apiUrl = 'http://localhost:4040/user/delete/'; // Replace with your API endpoint
-        const requestData = { id: userId }; // Data to send in the request
+        const apiUrl = 'http://localhost:4040/user/delete/';
+        const requestData = { id: userId };
 
-        // Make the PUT request to delete the user
         await axios.put(apiUrl, requestData)
                 .then(response => {
-                  // Check if the deletion was successful (you can use a response status or message)
                   if (response.data.status === 'success') {
                     this.deletingUser = false;
                     this.userSuccessMessage = 'User deleted successfully.';
@@ -279,7 +277,6 @@ export default {
                 });
       },
       addUser() {
-        // Check if the required fields are filled
         if (this.isEmailValid(this.newUser.email) && this.isNameValid(this.newUser.name) && this.isCountryValid(this.newUser.country)) {
             this.creatingUser = true;
             this.clearUserMessages();
@@ -313,7 +310,7 @@ export default {
       toggleCreateForm() {
           console.log("Opening Create Form");
           this.showCreateForm = !this.showCreateForm;
-          this.newUser = { email: '', name: '', country: '' }; // Reset the form fields
+          this.newUser = { email: '', name: '', country: '' };
       },
       clearUserMessages() {
         this.userSuccessMessage = '';

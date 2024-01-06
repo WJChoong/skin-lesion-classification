@@ -12,7 +12,7 @@ df = pd.read_csv('./dataset/ISIC2018_Task3_Test_GroundTruth.csv')  # Replace wit
 target_classes = ["DF", "VASC", "AKIEC"]
 
 # Maximum number of samples for each class
-max_samples = 1987
+max_samples = 2000
 
 # Columns representing the classes (excluding 'image' and 'UNK' columns)
 class_columns = df.columns[1:-1]
