@@ -25,7 +25,7 @@ def login_email_template(receiver_email, user_password, login_url):
       <p>You have been successfully registered. Here are your login details:</p>
       <p><strong>Username:</strong> {receiver_email}</p>
       <p><strong>Password:</strong> {user_password}</p>
-      <a href="{login_url}" style="display: inline-block; padding: 10px 15px; margin-top: 15px; background-color: #0056b3; color: #ffffff; border-radius: 5px; text-decoration: none;">Login Now</a>
+      <a href="http://localhost:8080/#/login" style="display: inline-block; padding: 10px 15px; margin-top: 15px; background-color: #0056b3; color: #ffffff; border-radius: 5px; text-decoration: none;">Login Now</a>
       <p class="footer">If you have any questions, please contact our support team.</p>
     </div>
   </body>

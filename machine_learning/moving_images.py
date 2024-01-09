@@ -35,9 +35,9 @@ def move_images(csv_file_path, source_folder, destination_folder, file_extension
 
 # Replace with your actual folder paths
 source_folder_path = './dataset/ISIC_2019_Training_Input'  
-destination_folder_path = './dataset/balanced_2019_4_class'
+destination_folder_path = './dataset/new_2019_images'
 
 # Move the images
-moved_files, missing_files = move_images('./dataset/new_2019_balanced.csv', source_folder_path, destination_folder_path)
+moved_files, missing_files = move_images('./dataset/new_2019.csv', source_folder_path, destination_folder_path)
 
 print(f"Moved {moved_files} files. {missing_files} files were missing.")

@@ -21,6 +21,11 @@ export default createStore({
     SET_USER_ID(state, id) {
       state.user_id = id;
     },
+    clearUserData(state) {
+      state.isAuthenticated = false;
+      state.user_level = null;
+      state.user_id = null;
+    },
   },
   actions: {
     setAuthenticated({ commit }, value) {

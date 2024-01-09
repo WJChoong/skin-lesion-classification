@@ -4,7 +4,7 @@ import os
 import shutil
 
 # Load the dataset
-file_path = './dataset/ISIC_2019_Training_GroundTruth.csv'  # Update with your file path
+file_path = './dataset/new_2019.csv'  # Update with your file path
 data = pd.read_csv(file_path)
 
 # Change the label of AK, DF, VASC, SCC to UNK
@@ -19,7 +19,7 @@ downsampled_data = pd.DataFrame()
 class_counts = data.drop('image', axis=1).sum().sort_values(ascending=False)
 
 for class_name, count in class_counts.items():
-    if count > 2500:
+    if count > 2000:
         class_data = data[data[class_name] == 1]
         downsampled_class_data = resample(class_data, replace=False, n_samples=2500, random_state=seed)
         downsampled_data = pd.concat([downsampled_data, downsampled_class_data], axis=0)
@@ -28,12 +28,12 @@ for class_name, count in class_counts.items():
         downsampled_data = pd.concat([downsampled_data, class_data], axis=0)
 
 # Save the new dataset to a CSV file
-new_dataset_path = './dataset/2019_4_class.csv'  # Update with your desired path
+new_dataset_path = './dataset/new_2019.csv'  # Update with your desired path
 downsampled_data.to_csv(new_dataset_path, index=False)
 
 # Define the source and destination folders for the images
 source_folder = './dataset/ISIC_2019_Training_Input'  # Update with your source folder path
-destination_folder = './dataset/balanced_2019_4_class'  # Update with your destination folder path
+destination_folder = './dataset/new_2019_classes'  # Update with your destination folder path
 
 # Create destination folder if it doesn't exist
 if not os.path.exists(destination_folder):

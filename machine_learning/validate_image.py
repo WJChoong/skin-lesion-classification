@@ -2,11 +2,11 @@ import pandas as pd
 import os
 
 # Load the CSV file with absolute path
-csv_path = './dataset/val_class.csv'
+csv_path = './dataset/new_2019.csv'
 df = pd.read_csv(csv_path)
 
 # Path to the directory containing the images with absolute path
-images_directory = './dataset/ISIC2018_Task3_Test_Input'
+images_directory = './dataset/new_2019_images'
 
 # File extension to append
 file_extension = '.jpg'  # Change this if your images use a different extension
