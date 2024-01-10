@@ -89,7 +89,6 @@ const axios = require('axios');
 export default {
   data() {
     return {
-    //   user_id: '',
       editing: false,
       loading: false,
       successMessage: '',
@@ -156,16 +155,12 @@ export default {
           email: this.user.email,
           country: this.user.country
         });
-        // On success
         if (response.data.status === 'success') {
             this.successMessage = 'Operation successful!';
-            // Additional success handling
         } else {
             this.errorMessage = 'An error occurred. Please try again.';
-            // Additional error handling
         }
       } catch (error) {
-        // Handle the error
         console.error('An error occurred:', error);
       }
       this.updateUserDetailsLoading = false;

@@ -35,10 +35,8 @@ def categoryImage(request):
             if not user_exists or not image_exists:
                 return failMessage('User or Image does not exist.')
             
-            # Generate a unique ID for the category entry
             category_id = generateId()
 
-            # Insert data into the category table
             with connection.cursor() as cursor:
                 sql_query = "INSERT INTO category (id, user_id, image_id, category, status) VALUES (%s, %s, %s, %s, %s)"
                 cursor.execute(sql_query, [category_id, user_id, image_id, category, 1]) 

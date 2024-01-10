@@ -9,10 +9,8 @@
           <span class="text-muted">No Image Selected</span>
         </div>
 
-        <!-- Hidden file input for triggering the file browser -->
         <input type="file" id="fileInput" ref="fileInput" @change="previewImage" accept="image/*" hidden>
 
-        <!-- Browse and Check buttons -->
         <div class="mt-3">
             <button class="btn btn-primary me-2" @click="browseImage" :disabled="isLoading">Browse Image</button>
             <button class="btn btn-primary" @click="checkImage">
@@ -21,9 +19,7 @@
             </button>
         </div>
 
-        <!-- Placeholder for results -->
         <p class="mt-3 text-white">Result: {{ resultMessage }}</p>
-        <!-- Include other elements for results here -->
       </div>
     </div>
   </div>
@@ -67,13 +63,11 @@ export default {
             'Content-Type': 'multipart/form-data',
           },
         });
-        // Handle success
         this.resultMessage = response.data.message;
       } catch (error) {
-        // Detailed error handling
         this.handleError(error);
       } finally {
-        this.isLoading = false; // Stop loading
+        this.isLoading = false;
       }
     },
     handleError(error) {
@@ -98,7 +92,7 @@ export default {
 <style scoped>
 .image-preview {
   width: 100%;
-  height: 300px; /* Adjust as needed */
+  height: 300px; 
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;

@@ -23,13 +23,10 @@ def generateId():
     return uuid.uuid4()
 
 def hash_password(password, salt):
-    # Ensure the salt is in byte format
     salt_bytes = salt.encode('utf-8')
 
-    # PBKDF2 with 100,000 iterations and SHA-256 as the hash function
     hashed_password = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt_bytes, 100000)
 
-    # Return the hashed password in a readable format
     return base64.b64encode(hashed_password).decode('utf-8')
 
 def verify_password(stored_hash, salt, password_to_check):
@@ -39,10 +36,8 @@ def verify_password(stored_hash, salt, password_to_check):
 
 def generatePassword(length=12, safe_characters=None):
     if safe_characters is None:
-        # Define a default set of safe characters (excluding sensitive ones)
         safe_characters = string.ascii_letters + string.digits + "!@$%"
 
-    # Make sure we have at least one character from each category
     required_characters = [
         random.choice(string.ascii_lowercase),
         random.choice(string.ascii_uppercase),
@@ -50,15 +45,12 @@ def generatePassword(length=12, safe_characters=None):
         random.choice("!@$%")
     ]
 
-    # Generate the rest of the password
     remaining_length = length - len(required_characters)
     random_characters = [random.choice(safe_characters) for _ in range(remaining_length)]
 
-    # Combine required and random characters, then shuffle them
     password_characters = required_characters + random_characters
     random.shuffle(password_characters)
 
-    # Convert the list of characters into a string
     password = ''.join(password_characters)
 
     return password
@@ -78,7 +70,6 @@ def login(request):
             return JsonResponse({'status': 'error', 'message': 'Invalid JSON data.'}, status=400)
 
         if email and password:
-            # Now you can execute a raw SQL query to retrieve additional data
             with connection.cursor() as cursor:
                 sql_query = "SELECT id FROM user WHERE email = %s AND status = 1"
                 cursor.execute(sql_query, [email])

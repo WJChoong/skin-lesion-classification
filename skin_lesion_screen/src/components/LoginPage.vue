@@ -102,19 +102,15 @@ export default {
       }
     },
     validateEmail() {
-      // Simple regex for basic email validation
       const pattern = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
 
       if (this.email.trim() === '') {
-        // Handle empty email field
         this.emailError = true;
         this.emailErrorMessage = 'Email address is required.';
       } else if (!pattern.test(this.email)) {
-        // Handle invalid email format
         this.emailError = true;
         this.emailErrorMessage = 'Please enter a valid email address.';
       } else {
-        // Email is valid
         this.emailError = false;
         this.emailErrorMessage = '';
       }
@@ -137,11 +133,10 @@ export default {
 
 <style scoped>
 .custom-dark-bg {
-  background-color: #343a40; /* A lighter shade of dark */
+  background-color: #343a40;
 }
-
 .invalid-feedback {
-  color: #e3342f; /* Bootstrap danger color */
+  color: #e3342f;
 }
 
 .d-block {

@@ -3,7 +3,7 @@ import numpy as np
 
 np.random.seed(45)
 
-df = pd.read_csv('./dataset/ISIC_2019_Training_GroundTruth.csv')  # Replace with your file path
+df = pd.read_csv('./dataset/ISIC_2019_Training_GroundTruth.csv')
 target_classes = ["DF", "VASC", "AK", "SCC"]
 # target_classes = ["DF", "VASC", "AKIEC"]
 

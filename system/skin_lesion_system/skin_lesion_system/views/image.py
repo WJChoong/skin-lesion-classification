@@ -15,7 +15,6 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from django.core.files.storage import FileSystemStorage
 from django.views.decorators.csrf import csrf_exempt
 from django.db import connection
-#from keras.preprocessing.image import load_img, img_to_array
 from datetime import datetime
 from .auth import generateId
 from ..common.message import successMessage, failMessage
@@ -27,10 +26,8 @@ def preprocess_image(image_path):
     img = load_img(image_path, target_size=(224, 224, 3))
     img_array = img_to_array(img)
 
-    # Normalize the image (adjust this according to how you trained your model)
     img_array = img_array / 255.0
 
-    # Add a batch dimension
     img_array = np.expand_dims(img_array, axis=0)
 
     return img_array   
@@ -41,7 +38,6 @@ def checkLesion(request):
         image = request.FILES['image']
         # Extract the file extension from the original image name
         original_extension = os.path.splitext(image.name)[1]
-        # Get the current timestamp
         current_timestamp = datetime.now()
         new_filename = f"{current_timestamp.strftime('%Y%m%d%H%M%S')}{original_extension}"
         print("New filename:", new_filename)
@@ -58,15 +54,11 @@ def checkLesion(request):
             print(f"Database error: {e}")
             return failMessage('Database error', 500)
         
-        # Preprocess the uploaded image
         img_full_path = os.path.join(settings.MEDIA_ROOT, 'unlabelled', filename)
         img = preprocess_image(img_full_path)
 
-        # Predict the class of the image
         prediction = model.predict(img)
-        predicted_class = np.argmax(prediction, axis=-1)  # Adjust if your model outputs different results
-
-        # # You can map the predicted class index to an actual label
+        predicted_class = np.argmax(prediction, axis=-1) 
         label_map = {0: 'Melanoma', 1: 'Melanocytic Nevus', 2: 'Bascal Cell Carcinoma', 3: 'Benign Keratosis', 4: 'Unkown'} 
         predicted_label = label_map[predicted_class[0]]
         
@@ -79,7 +71,6 @@ def getImages(request):
     image_data = []
     try:
         with connection.cursor() as cursor:
-            # Query to select the image ID and name from the database
             sql_query = """
             SELECT image.id, image.name 
             FROM image 
@@ -92,12 +83,10 @@ def getImages(request):
             for image_id, image_name in images:
                 image_path = os.path.join(settings.MEDIA_ROOT, 'unlabelled', image_name)
                 
-                # Ensure the file exists before trying to open it
                 if os.path.exists(image_path):
                     with open(image_path, "rb") as image_file:
                         # Encode the image file as base64
                         encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
-                        # Append the image data to the list
                         image_data.append({'id': image_id, 'image': f"data:image/jpeg;base64,{encoded_string}"})
                 else:
                     print(f"File not found: {image_path}")
@@ -124,7 +113,6 @@ def deleteImage(request):
                 existing_image = cursor.fetchone()
 
             if existing_image:
-                # Soft delete the image
                 with connection.cursor() as cursor:
                     current_time = datetime.now()
                     sql_query = """
